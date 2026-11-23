@@ -14,7 +14,8 @@ import {
   Flame,
   Award,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Sparkles
 } from "lucide-react";
 
 export default function DesktopSidebar() {
@@ -29,7 +30,7 @@ export default function DesktopSidebar() {
     { label: "Dual Study Cards", href: "/student/dual-cards", icon: Award },
     { label: "15-Mark Lab Arena", href: "/student/labs", icon: FlaskConical },
     { label: "Board Radar (Cyclical)", href: "/student/radar", icon: Flame },
-    { label: "Socratic AI Ustad", href: "/student/ustad", icon: MessageSquareHeart },
+    { label: "Socratic AI Coach", href: "/student/ustad", icon: MessageSquareHeart },
   ];
 
   const teacherLinks = [
@@ -86,6 +87,17 @@ export default function DesktopSidebar() {
           );
         })}
       </nav>
+
+      {/* Brand & AI Coach Tagline Card */}
+      <div className="my-3 px-3 py-2 rounded-xl bg-[#10192D] border border-slate-800 text-[11px] text-slate-300 flex items-center gap-2.5 shadow-sm">
+        <div className="w-6 h-6 rounded-md bg-emerald-500/20 text-brand-emerald flex items-center justify-center shrink-0">
+          <Sparkles className="w-3.5 h-3.5" />
+        </div>
+        <div className="leading-tight">
+          <p className="font-bold text-white text-[11px]">BoardRadar</p>
+          <p className="text-brand-emerald text-[10px] font-medium">Your Board Exam AI Coach</p>
+        </div>
+      </div>
 
       {/* Bottom Board Badge */}
       <div className="mt-auto pt-4 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-between">

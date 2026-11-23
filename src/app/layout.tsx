@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
 import RoleSwitcherBar from "@/components/navigation/RoleSwitcherBar";
@@ -6,9 +6,15 @@ import DesktopSidebar from "@/components/navigation/DesktopSidebar";
 import MobileDock from "@/components/navigation/MobileDock";
 
 export const metadata: Metadata = {
-  title: "Ustad AI | Nasra Academic Platform",
-  description: "Curriculum-grounded Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform for Class 9 and 10 students and teachers.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
+  title: "BoardRadar | Your Board Exam AI Coach (AI Ustad) - BSEK & AKU-EB",
+  description: "BoardRadar: 15-Year past-paper grounded Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform and AI Coach for Class 9 & 10 students and teachers.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

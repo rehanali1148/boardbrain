@@ -15,7 +15,7 @@ export default function MobileDock() {
     { label: "Today", href: "/student", icon: LayoutDashboard },
     { label: "Practice", href: "/student/practice", icon: Target },
     { label: "Labs", href: "/student/labs", icon: FlaskConical },
-    { label: "AI Ustad", href: "/student/ustad", icon: MessageSquareHeart },
+    { label: "AI Coach", href: "/student/ustad", icon: MessageSquareHeart },
   ];
 
   const teacherTabs = [
