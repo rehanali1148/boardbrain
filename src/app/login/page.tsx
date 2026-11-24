@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
+import BoardBrainLogo from "@/components/navigation/BoardBrainLogo";
 import {
   GraduationCap,
   Sparkles,
@@ -60,21 +61,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#070C18] text-slate-100 flex flex-col justify-between p-4 sm:p-6 lg:p-8">
       {/* Top Bar Branding */}
       <div className="flex items-center justify-between max-w-5xl mx-auto w-full pt-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-emerald to-brand-amber flex items-center justify-center text-xl shadow-lg shadow-emerald-950/40">
-            🧠
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl text-white tracking-tight">BoardBrain</span>
-              <span className="text-slate-500 font-light">•</span>
-              <span className="text-brand-amber font-nastaliq text-base" dir="rtl">بورڈ برین</span>
-            </div>
-            <p className="text-[11px] text-brand-emerald font-semibold">
-              🎯 Your Board Exam AI Coach (AI Ustad)
-            </p>
-          </div>
-        </div>
+        <BoardBrainLogo size={44} />
 
         <div className="flex items-center gap-2">
           <span className="bg-emerald-950/80 border border-emerald-500/30 text-brand-emerald text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">

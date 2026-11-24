@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
 import { UserCheck, Moon, Sun, ShieldAlert, Sparkles, LogIn } from "lucide-react";
+import BoardBrainLogo from "./BoardBrainLogo";
 
 export default function RoleSwitcherBar() {
   const { user, roleKey, switchRole, isExamLightMode, toggleExamLightMode, isLoading } = useAuth();
@@ -16,21 +17,9 @@ export default function RoleSwitcherBar() {
           <Sparkles className="w-3 h-3" />
           <span>Saddar Pilot</span>
         </div>
-        <div className="flex items-center gap-2 font-semibold text-slate-200">
-          <span className="text-brand-emerald text-base">🧠</span>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold tracking-tight text-white text-sm">BoardBrain</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-brand-amber font-nastaliq text-xs" dir="rtl">بورڈ برین</span>
-            </div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950/60 text-brand-emerald text-[10px] md:text-[11px] font-semibold border border-emerald-500/30">
-              <span>🎯 Your Board Exam AI Coach (AI Ustad)</span>
-            </span>
-          </div>
-          <span className="text-slate-500 hidden lg:inline">•</span>
-          <span className="text-slate-400 font-normal hidden lg:inline">Education Trust Nasra Schools</span>
-        </div>
+        <BoardBrainLogo size={32} />
+        <span className="text-slate-500 hidden lg:inline">•</span>
+        <span className="text-slate-400 font-normal hidden lg:inline">Education Trust Nasra Schools</span>
       </div>
 
       {/* Role Switcher Chips */}
