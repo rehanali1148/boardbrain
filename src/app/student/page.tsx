@@ -16,7 +16,9 @@ import {
   AlertTriangle,
   ChevronRight,
   TrendingUp,
-  Award
+  Award,
+  Medal,
+  Zap
 } from "lucide-react";
 
 export default function StudentHomePage() {
@@ -143,6 +145,52 @@ export default function StudentHomePage() {
               style={{ width: `${progress?.practical_readiness_pct || 82.5}%` }}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Gamified Honors & Badges Showcase Bar */}
+      <div className="bg-gradient-to-r from-[#10192D] via-[#162238] to-[#10192D] border border-slate-800 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
+            <Medal className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-bold text-white tracking-tight">Trophy Room &amp; Honors</h4>
+              <span className="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30">
+                6 Earned
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">
+              Celebrate your board habits with zero ranking stress.
+            </p>
+          </div>
+        </div>
+
+        {/* Mini Badges Preview & Link */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[11px] font-semibold">
+              <Award className="w-3 h-3 text-amber-400" />
+              <span>Teacher&apos;s Pride ⭐</span>
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold">
+              <Target className="w-3 h-3 text-emerald-400" />
+              <span>Section A Destroyer</span>
+            </span>
+            <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold">
+              <Zap className="w-3 h-3 text-cyan-400" />
+              <span>SI Unit Master</span>
+            </span>
+          </div>
+
+          <Link
+            href="/student/awards"
+            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-emerald text-xs font-bold transition-all flex items-center gap-1 shrink-0"
+          >
+            <span>View All</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 

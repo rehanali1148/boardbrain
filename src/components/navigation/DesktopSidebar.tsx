@@ -15,7 +15,8 @@ import {
   Award,
   BookOpen,
   GraduationCap,
-  Sparkles
+  Sparkles,
+  Medal
 } from "lucide-react";
 
 export default function DesktopSidebar() {
@@ -25,6 +26,7 @@ export default function DesktopSidebar() {
 
   const studentLinks = [
     { label: "Today's Command", href: "/student", icon: LayoutDashboard },
+    { label: "Awards & Badges", href: "/student/awards", icon: Medal },
     { label: "5-Min MCQ Blitz", href: "/student/practice", icon: Target },
     { label: "Step Numericals & OCR", href: "/student/numericals", icon: BookOpen },
     { label: "Dual Study Cards", href: "/student/dual-cards", icon: Award },
@@ -35,6 +37,7 @@ export default function DesktopSidebar() {
 
   const teacherLinks = [
     { label: "Class Overview", href: "/teacher", icon: LayoutDashboard },
+    { label: "Class Badge Wall", href: "/teacher/badges", icon: Medal },
     { label: "60s Exam Generator", href: "/teacher/generator", icon: FileText },
     { label: "Doubt Escalations", href: "/teacher/doubts", icon: MessageSquareHeart },
     { label: "Class Weakness Heatmap", href: "/teacher/heatmap", icon: BarChart3 },

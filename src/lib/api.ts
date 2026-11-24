@@ -146,3 +146,85 @@ export async function getClassHeatmap(campus: string = "Saddar", classGrade: num
 export async function getTeacherGoldNotes(campus: string = "Saddar", classGrade: number = 10, subject: string = "Physics") {
   return fetchWithAuth(`/teacher/gold-notes?campus=${campus}&class_grade=${classGrade}&subject=${subject}`);
 }
+
+// 5. Awards & Badges Gamification Suite
+export interface BadgeItem {
+  slug: string;
+  title: string;
+  title_urdu: string;
+  category: "blitz" | "numericals" | "labs" | "consistency" | "endorsement";
+  tier: "bronze" | "silver" | "gold" | "platinum";
+  icon: string;
+  description: string;
+  criteria_text: string;
+  xp_points: number;
+  earned_at: string | null;
+  endorsement_by: string | null;
+  endorsement_note: string | null;
+  is_unlocked: number;
+}
+
+export interface StudentBadgesResponse {
+  student_name: string;
+  erp_user_id: string;
+  total_badges: number;
+  unlocked_count: number;
+  total_xp: number;
+  tier_counts: {
+    platinum: number;
+    gold: number;
+    silver: number;
+    bronze: number;
+  };
+  badges: BadgeItem[];
+}
+
+export async function getStudentBadges(): Promise<StudentBadgesResponse> {
+  return fetchWithAuth("/student/badges");
+}
+
+export async function claimStudentBadge(badgeSlug: string) {
+  return fetchWithAuth(`/student/badges/claim?badge_slug=${encodeURIComponent(badgeSlug)}`, {
+    method: "POST",
+  });
+}
+
+export interface StudentWallItem {
+  id: number;
+  erp_user_id: string;
+  full_name: string;
+  campus: string;
+  class_grade: number;
+  section: string;
+  board: string;
+  group_name: string;
+  earned_badges: BadgeItem[];
+  badge_count: number;
+}
+
+export interface ClassBadgesResponse {
+  campus: string;
+  class_grade: number;
+  section: string;
+  total_students: number;
+  students: StudentWallItem[];
+}
+
+export async function getClassBadges(
+  campus: string = "Saddar",
+  classGrade: number = 10,
+  section: string = "A"
+): Promise<ClassBadgesResponse> {
+  return fetchWithAuth(`/teacher/class-badges?campus=${campus}&class_grade=${classGrade}&section=${section}`);
+}
+
+export async function awardStudentBadge(
+  studentId: number,
+  badgeSlug: string = "teachers_pride",
+  endorsementNote: string = "Exemplary performance and dedication."
+) {
+  return fetchWithAuth(
+    `/teacher/award-badge?student_id=${studentId}&badge_slug=${encodeURIComponent(badgeSlug)}&endorsement_note=${encodeURIComponent(endorsementNote)}`,
+    { method: "POST" }
+  );
+}
