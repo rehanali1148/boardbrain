@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-import { UserCheck, Moon, Sun, ShieldAlert, Sparkles } from "lucide-react";
+import { UserCheck, Moon, Sun, ShieldAlert, Sparkles, LogIn } from "lucide-react";
 
 export default function RoleSwitcherBar() {
   const { user, roleKey, switchRole, isExamLightMode, toggleExamLightMode, isLoading } = useAuth();
@@ -105,6 +106,15 @@ export default function RoleSwitcherBar() {
             </>
           )}
         </button>
+        {/* Pilot Login Portal Link */}
+        <Link
+          href="/login"
+          title="Go to Pilot Login Portal"
+          className="ml-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-brand-emerald hover:bg-emerald-900 border border-emerald-500/40 flex items-center gap-1 transition-all"
+        >
+          <LogIn className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Pilot Login</span>
+        </Link>
       </div>
     </header>
   );
