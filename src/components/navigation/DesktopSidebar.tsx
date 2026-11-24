@@ -97,7 +97,7 @@ export default function DesktopSidebar() {
           <Sparkles className="w-3.5 h-3.5" />
         </div>
         <div className="leading-tight">
-          <p className="font-bold text-white text-[11px]">BoardRadar</p>
+          <p className="font-bold text-white text-[11px]">BoardBrain</p>
           <p className="text-brand-emerald text-[10px] font-medium">Your Board Exam AI Coach</p>
         </div>
       </div>

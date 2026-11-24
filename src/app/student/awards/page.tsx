@@ -100,7 +100,7 @@ export default function StudentAwardsPage() {
   };
 
   const handleShare = (badge: BadgeItem) => {
-    const text = `🎖️ I just unlocked the "${badge.title} (${badge.title_urdu})" badge on BoardRadar! Preparing for Class ${user?.class_grade} Board Finals with AI Coaching. 🚀`;
+    const text = `🎖️ I just unlocked the "${badge.title} (${badge.title_urdu})" badge on BoardBrain! Preparing for Class ${user?.class_grade} Board Finals with AI Coaching. 🚀`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -121,7 +121,7 @@ export default function StudentAwardsPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-amber/15 text-brand-amber text-xs font-semibold border border-brand-amber/30">
               <Trophy className="w-3.5 h-3.5" />
-              <span>BoardRadar Trophy Room &amp; Milestones</span>
+              <span>BoardBrain Trophy Room &amp; Milestones</span>
             </div>
             <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
               <span>Class {user?.class_grade} Honors &amp; Badges</span>

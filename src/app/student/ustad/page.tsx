@@ -23,7 +23,7 @@ export default function SocraticUstadPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ustad",
-      text: "Assalam-o-Alaikum! Main aap ka AI Ustad hoon — BoardRadar ka Socratic Exam Coach. Board exam ya numericals mein koi bhi mushkil ho, bina jhijhak poochein. Hum step-by-step solve karein ge.",
+      text: "Assalam-o-Alaikum! Main aap ka AI Ustad hoon — BoardBrain ka Socratic Exam Coach. Board exam ya numericals mein koi bhi mushkil ho, bina jhijhak poochein. Hum step-by-step solve karein ge.",
     },
   ]);
   const [inputText, setInputText] = useState("");
