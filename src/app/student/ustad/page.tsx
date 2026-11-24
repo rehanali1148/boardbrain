@@ -23,7 +23,7 @@ export default function SocraticUstadPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ustad",
-      text: "Assalam-o-Alaikum! Main aap ka AI Ustad hoon — BoardBrain ka Socratic Exam Coach. Board exam ya numericals mein koi bhi mushkil ho, bina jhijhak poochein. Hum step-by-step solve karein ge.",
+      text: "Assalam-o-Alaikum! Main aap ka AI Guru hoon — BoardBrain ka Socratic Exam Master. Board exam ya numericals mein koi bhi mushkil ho, bina jhijhak poochein. Hum step-by-step solve karein ge.",
     },
   ]);
   const [inputText, setInputText] = useState("");
@@ -88,7 +88,7 @@ export default function SocraticUstadPage() {
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-2">
             <MessageSquareHeart className="w-5 h-5 text-brand-emerald" />
-            <span>Socratic AI Ustad (Your Board Exam Coach)</span>
+            <span>Socratic AI Guru (Your Board Exam Guru)</span>
           </h1>
           <p className="text-xs text-slate-400">
             Ask in Roman Urdu or English. Guided step-by-step without giving away answers immediately.

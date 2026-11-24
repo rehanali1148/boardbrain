@@ -78,13 +78,20 @@ export default function LoginPage() {
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-brand-amber/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="text-center mb-6">
-          <div className="inline-flex p-2.5 rounded-2xl bg-[#131F37] border border-slate-700/60 mb-3 shadow-inner">
-            <School className="w-6 h-6 text-brand-amber" />
+          <div className="w-24 h-24 mx-auto mb-3 rounded-2xl overflow-hidden shadow-lg border border-slate-700 bg-white p-1.5 flex items-center justify-center">
+            <img
+              src="/boardbrain-icon.png"
+              alt="BoardBrain — Your Board Exam AI Guru"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">
             Academic Pilot Portal
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-sky-400 font-semibold mt-0.5">
+            YOUR BOARD EXAM AI GURU
+          </p>
+          <p className="text-[11px] text-slate-400 mt-1">
             Education Trust Nasra Schools • Saddar Campus
           </p>
         </div>

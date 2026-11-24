@@ -64,7 +64,7 @@ export default function StudentHomePage() {
               Assalam-o-Alaikum, <span className="text-brand-amber">{user?.full_name?.split(" ")[0]}</span>!
             </h1>
             <p className="text-xs md:text-sm text-slate-300">
-              Welcome to <span className="text-brand-emerald font-semibold">BoardBrain</span> — Your Board Exam AI Coach &amp; AI Ustad. Target: <span className="text-brand-emerald font-bold">Grade A-1</span> in Board Finals.
+              Welcome to <span className="text-sky-400 font-bold">BoardBrain</span> — Your Board Exam AI Guru. Target: <span className="text-brand-emerald font-bold">Grade A-1</span> in Board Finals.
             </p>
           </div>
 

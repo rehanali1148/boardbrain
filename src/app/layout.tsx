@@ -6,8 +6,13 @@ import DesktopSidebar from "@/components/navigation/DesktopSidebar";
 import MobileDock from "@/components/navigation/MobileDock";
 
 export const metadata: Metadata = {
-  title: "BoardBrain | Your Board Exam AI Coach (AI Ustad) - BSEK & AKU-EB",
-  description: "BoardBrain: 15-Year past-paper grounded Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform and AI Coach for Class 9 & 10 students and teachers.",
+  title: "BoardBrain | Your Board Exam AI Guru - BSEK & AKU-EB",
+  description: "BoardBrain: 15-Year past-paper grounded Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform and AI Guru for Class 9 & 10 students and teachers.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/boardbrain-icon.png",
+    apple: "/boardbrain-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

@@ -33,7 +33,7 @@ export default function DesktopSidebar() {
     { label: "Dual Study Cards", href: "/student/dual-cards", icon: Award },
     { label: "15-Mark Lab Arena", href: "/student/labs", icon: FlaskConical },
     { label: "Board Radar (Cyclical)", href: "/student/radar", icon: Flame },
-    { label: "Socratic AI Coach", href: "/student/ustad", icon: MessageSquareHeart },
+    { label: "Socratic AI Guru", href: "/student/ustad", icon: MessageSquareHeart },
   ];
 
   const teacherLinks = [

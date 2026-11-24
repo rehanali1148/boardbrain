@@ -100,7 +100,7 @@ export default function StudentAwardsPage() {
   };
 
   const handleShare = (badge: BadgeItem) => {
-    const text = `🎖️ I just unlocked the "${badge.title} (${badge.title_urdu})" badge on BoardBrain! Preparing for Class ${user?.class_grade} Board Finals with AI Coaching. 🚀`;
+    const text = `🎖️ I just unlocked the "${badge.title} (${badge.title_urdu})" badge on BoardBrain! Preparing for Class ${user?.class_grade} Board Finals with my AI Guru. 🚀`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
