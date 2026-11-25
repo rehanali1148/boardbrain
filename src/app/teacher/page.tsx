@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
 import { getClassHeatmap, getTeacherDoubts } from "@/lib/api";
+import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 import {
   FileText,
   MessageSquareHeart,
@@ -12,7 +13,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Sparkles,
-  Award
+  Award,
+  Play
 } from "lucide-react";
 
 export default function TeacherHomePage() {
@@ -20,6 +22,16 @@ export default function TeacherHomePage() {
   const [heatmap, setHeatmap] = useState<any>(null);
   const [doubts, setDoubts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+
+  useEffect(() => {
+    // Auto popup on login / initial entry
+    const seen = sessionStorage.getItem("bb_teacher_intro_seen");
+    if (!seen) {
+      setShowVideoModal(true);
+      sessionStorage.setItem("bb_teacher_intro_seen", "1");
+    }
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -55,13 +67,23 @@ export default function TeacherHomePage() {
             </p>
           </div>
 
-          <Link
-            href="/teacher/generator"
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-amber to-brand-emerald text-slate-950 font-bold text-xs md:text-sm shadow-md hover:opacity-95 transition-all flex items-center gap-2 self-start md:self-auto"
-          >
-            <FileText className="w-4 h-4" />
-            <span>60s Exam Paper Generator</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            <button
+              onClick={() => setShowVideoModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs md:text-sm border border-amber-500/40 shadow-sm transition-all flex items-center gap-2"
+            >
+              <Play className="w-4 h-4 fill-amber-300 text-amber-300" />
+              <span>ویڈیو بریفنگ دیکھیں (2.5 Min)</span>
+            </button>
+
+            <Link
+              href="/teacher/generator"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-amber to-brand-emerald text-slate-950 font-bold text-xs md:text-sm shadow-md hover:opacity-95 transition-all flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              <span>60s Exam Paper Generator</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -155,6 +177,16 @@ export default function TeacherHomePage() {
           </div>
         </div>
       </div>
+
+      {/* Teacher Orientation Video Popup */}
+      <OrientationVideoModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoSrc="/boardbrain_teacher_presentation.mp4"
+        title="🎓 Teacher Masterclass & Pilot Briefing — Your Board Exam AI Guru"
+        subtitle="2.5 منٹ کی مکمل ویڈیو بریفنگ مع اردو وائس اوور • اساتذہ اور اسکول قیادت کے لیے"
+        theme="teacher"
+      />
     </div>
   );
 }

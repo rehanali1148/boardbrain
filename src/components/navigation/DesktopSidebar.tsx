@@ -97,14 +97,18 @@ export default function DesktopSidebar() {
         <BoardBrainLogo size={32} />
       </div>
 
-      {/* Audio Guide Quick Link */}
+      {/* Video Presentation Quick Link */}
       <a
-        href="/boardbrain_audio_walkthrough_urdu.mp3"
+        href={isTeacher ? "/boardbrain_teacher_presentation.mp4" : "/boardbrain_student_presentation.mp4"}
         target="_blank"
         rel="noreferrer"
-        className="my-1.5 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 text-brand-emerald text-xs font-bold border border-emerald-500/40 transition-all"
+        className={`my-1.5 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold border transition-all ${
+          isTeacher
+            ? "bg-amber-950/60 hover:bg-amber-900/60 text-brand-amber border-amber-500/40"
+            : "bg-sky-950/60 hover:bg-sky-900/60 text-brand-sky border-sky-500/40"
+        }`}
       >
-        <span>🎙️ سنو اردو آڈیو گائیڈ (Audio)</span>
+        <span>🎬 {isTeacher ? "ویڈیو بریفنگ چلائیں (Teacher Video)" : "ویڈیو واک تھرو (Student Video)"}</span>
       </a>
 
       {/* Switch Account / Pilot Login */}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
 import { getStudentProgress } from "@/lib/api";
+import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 import {
   Flame,
   ShieldCheck,
@@ -18,13 +19,24 @@ import {
   TrendingUp,
   Award,
   Medal,
-  Zap
+  Zap,
+  Play
 } from "lucide-react";
 
 export default function StudentHomePage() {
   const { user } = useAuth();
   const [progress, setProgress] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Auto popup on login / initial entry for student
+    const seen = sessionStorage.getItem("bb_student_intro_seen");
+    if (!seen) {
+      setShowVideoModal(true);
+      sessionStorage.setItem("bb_student_intro_seen", "1");
+    }
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -66,6 +78,15 @@ export default function StudentHomePage() {
             <p className="text-xs md:text-sm text-slate-300">
               Welcome to <span className="text-sky-400 font-bold">BoardBrain</span> — Your Board Exam AI Guru. Target: <span className="text-brand-emerald font-bold">Grade A-1</span> in Board Finals.
             </p>
+            <div className="pt-1.5">
+              <button
+                onClick={() => setShowVideoModal(true)}
+                className="px-3.5 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs font-bold border border-sky-500/40 shadow-sm transition-all inline-flex items-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-sky-300 text-sky-300" />
+                <span>ویڈیو واک تھرو دیکھیں (2.5 Min)</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Metrics Badges */}
@@ -293,6 +314,16 @@ export default function StudentHomePage() {
           </Link>
         </div>
       )}
+
+      {/* Student Orientation Video Popup */}
+      <OrientationVideoModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoSrc="/boardbrain_student_presentation.mp4"
+        title="🚀 Welcome to BoardBrain! — Student Orientation Walkthrough"
+        subtitle="دیکھیں رٹے کے بغیر گیم بیجز کے ساتھ بورڈ امتحان میں A-1 گریڈ کیسے حاصل کرنا ہے"
+        theme="student"
+      />
     </div>
   );
 }
