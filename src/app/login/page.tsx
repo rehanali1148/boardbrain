@@ -96,6 +96,23 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Urdu Audio Briefing Player */}
+        <div className="mb-5 p-3 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 text-center shadow-inner">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>🎙️</span>
+              <span>اردو آڈیو بریفنگ (Audio Guide)</span>
+            </span>
+            <span className="text-[10px] bg-brand-emerald text-slate-950 font-bold px-2 py-0.5 rounded-full">
+              2.5 Min Walkthrough
+            </span>
+          </div>
+          <audio controls className="w-full h-8 rounded-lg outline-none" style={{ filter: "invert(0.9) hue-rotate(180deg)" }}>
+            <source src="/boardbrain_audio_walkthrough_urdu.mp3" type="audio/mpeg" />
+            Your browser does not support audio.
+          </audio>
+        </div>
+
         {/* Tab Switcher */}
         <div className="grid grid-cols-2 p-1 bg-[#131D33] rounded-xl mb-6 border border-slate-800">
           <button

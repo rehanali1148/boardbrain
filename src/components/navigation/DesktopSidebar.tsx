@@ -97,6 +97,16 @@ export default function DesktopSidebar() {
         <BoardBrainLogo size={32} />
       </div>
 
+      {/* Audio Guide Quick Link */}
+      <a
+        href="/boardbrain_audio_walkthrough_urdu.mp3"
+        target="_blank"
+        rel="noreferrer"
+        className="my-1.5 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 text-brand-emerald text-xs font-bold border border-emerald-500/40 transition-all"
+      >
+        <span>🎙️ سنو اردو آڈیو گائیڈ (Audio)</span>
+      </a>
+
       {/* Switch Account / Pilot Login */}
       <Link
         href="/login"
