@@ -1,6 +1,5 @@
 // Verified Board Curriculum Data Engine for BoardBrain
-// Provides complete, offline-resilient Sindh (BSEK) & Federal (FBISE) Board data
-// Guaranteed to load immediately without network latency or mixed-content failure
+// Comprehensive Sindh (BSEK) & Federal (FBISE) Board questions for Class 9 & Class 10
 
 export interface QuestionItem {
   question_id: string;
@@ -99,7 +98,201 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
 };
 
 export const FALLBACK_QUESTIONS: QuestionItem[] = [
-  // --- PHYSICS 10: Simple Harmonic Motion ---
+  // =========================================================================
+  // CLASS 9 CHEMISTRY
+  // =========================================================================
+  {
+    question_id: "CHM09-FND-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Chemistry",
+    chapter_name: "Fundamentals of Chemistry",
+    section: "SECTION_A",
+    text_en: "The number of particles in one mole of any substance is equal to Avogadro's number, which is:",
+    text_ur: "کسی بھی شے کے ایک مول میں ذرات کی تعداد ایوگیڈرو نمبر کے برابر ہوتی ہے، جو ہے:",
+    options_json: JSON.stringify({
+      A: "6.022 × 10²³",
+      B: "6.022 × 10⁻²³",
+      C: "3.011 × 10²³",
+      D: "1.66 × 10⁻²⁴"
+    }),
+    correct_option: "A",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "N_A = 6.022 × 10²³ particles/mol",
+    solution_rubric: "Avogadro's constant is exactly 6.022 × 10²³ particles per mole. Option B has a negative exponent, which is a distractor.",
+    cognitive_level: "Knowledge",
+    trap_note: "Examiner Trap: Beware of negative powers! 10²³ is positive, not 10⁻²³."
+  },
+  {
+    question_id: "CHM09-FND-002",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Chemistry",
+    chapter_name: "Fundamentals of Chemistry",
+    section: "SECTION_A",
+    text_en: "What is the molecular mass of Sulphuric Acid (H₂SO₄)? [Atomic masses: H=1, S=32, O=16]",
+    text_ur: "سلفیورک ایسڈ (H₂SO₄) کا مالیکیولر ماس کیا ہے؟ [ایٹمی ماس: H=1, S=32, O=16]",
+    options_json: JSON.stringify({
+      A: "49 amu",
+      B: "98 amu",
+      C: "96 amu",
+      D: "100 amu"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: true,
+    formula_used: "M = (2 × 1) + (1 × 32) + (4 × 16) = 2 + 32 + 64 = 98 amu",
+    solution_rubric: "H₂SO₄ = 2(1) + 32 + 4(16) = 2 + 32 + 64 = 98 amu.",
+    cognitive_level: "Application",
+    trap_note: "Do not forget to multiply Oxygen by 4 (4 × 16 = 64)!"
+  },
+  {
+    question_id: "CHM09-FND-003",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Chemistry",
+    chapter_name: "Fundamentals of Chemistry",
+    section: "SECTION_A",
+    text_en: "The empirical formula of Benzene (C₆H₆) is:",
+    text_ur: "بینزین (C₆H₆) کا ایمپیریکل فارمولا کیا ہے؟",
+    options_json: JSON.stringify({
+      A: "CH",
+      B: "CH₂",
+      C: "C₆H₆",
+      D: "C₂H₂"
+    }),
+    correct_option: "A",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "Simplest whole-number ratio: 6:6 -> 1:1 = CH",
+    solution_rubric: "The empirical formula represents the simplest whole-number ratio of atoms in a compound. For C₆H₆, dividing by 6 yields CH.",
+    cognitive_level: "Understanding",
+    trap_note: "C₆H₆ is the molecular formula; CH is the empirical formula."
+  },
+  {
+    question_id: "CHM09-ATM-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Chemistry",
+    chapter_name: "Structure of Atoms",
+    section: "SECTION_A",
+    text_en: "Rutherford's alpha-particle scattering experiment led to the discovery of:",
+    text_ur: "ردرفورڈ کے الفا پارٹیکل کے تجربے سے کیا دریافت ہوا؟",
+    options_json: JSON.stringify({
+      A: "Electron",
+      B: "Atomic Nucleus",
+      C: "Neutron",
+      D: "Proton"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Rutherford's gold foil experiment showed large-angle deflections of alpha particles, proving the presence of a dense, positively charged nucleus.",
+    cognitive_level: "Knowledge",
+    trap_note: "Electrons were discovered by J.J. Thomson; Nucleus was discovered by Rutherford."
+  },
+
+  // =========================================================================
+  // CLASS 9 BIOLOGY
+  // =========================================================================
+  {
+    question_id: "BIO09-INT-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Biology",
+    chapter_name: "Introduction to Biology",
+    section: "SECTION_A",
+    text_en: "The branch of biology dealing with the study of tissues using a microscope is called:",
+    text_ur: "خوردبین کی مدد سے بافتوں (Tissues) کا مطالعہ کیا کہلاتا ہے؟",
+    options_json: JSON.stringify({
+      A: "Morphology",
+      B: "Histology",
+      C: "Physiology",
+      D: "Taxonomy"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Histology is the microscopic study of plant and animal tissues.",
+    cognitive_level: "Knowledge",
+    trap_note: "Morphology is external form; Histology is internal microscopic tissue study."
+  },
+  {
+    question_id: "BIO09-CEL-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Biology",
+    chapter_name: "Cells and Tissues",
+    section: "SECTION_A",
+    text_en: "Which organelle is known as the powerhouse of the cell because it produces ATP?",
+    text_ur: "کس خلیاتی عضوئے کو سیل کا پاور ہاؤس کہا جاتا ہے کیونکہ یہ اے ٹی پی بناتا ہے؟",
+    options_json: JSON.stringify({
+      A: "Ribosome",
+      B: "Mitochondria",
+      C: "Golgi apparatus",
+      D: "Endoplasmic reticulum"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Mitochondria carry out aerobic cellular respiration and synthesize ATP, earning the title 'powerhouse of the cell'.",
+    cognitive_level: "Knowledge",
+    trap_note: "Ribosomes synthesize proteins; Mitochondria synthesize ATP."
+  },
+
+  // =========================================================================
+  // CLASS 9 PHYSICS
+  // =========================================================================
+  {
+    question_id: "PHY09-PHY-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Physics",
+    chapter_name: "Physical Quantities & Measurement",
+    section: "SECTION_A",
+    text_en: "Which of the following is an SI Base Unit?",
+    text_ur: "مندرجہ ذیل میں سے کون سا بنیادی ایس آئی (SI) یونٹ ہے؟",
+    options_json: JSON.stringify({
+      A: "Newton",
+      B: "Kilogram",
+      C: "Joule",
+      D: "Pascal"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Kilogram (kg) is one of the 7 fundamental SI base units. Newton, Joule, and Pascal are derived units.",
+    cognitive_level: "Knowledge",
+    trap_note: "Newton (kg·m/s²) is derived; Kilogram is base!"
+  },
+  {
+    question_id: "PHY09-KIN-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Physics",
+    chapter_name: "Kinematics",
+    section: "SECTION_A",
+    text_en: "A car accelerates uniformly from rest to 20 m/s in 5 seconds. Its acceleration is:",
+    text_ur: "ایک گاڑی سکون کی حالت سے 5 سیکنڈ میں 20 میٹر فی سیکنڈ کی رفتار حاصل کرتی ہے۔ اس کا ایکسلریشن ہے:",
+    options_json: JSON.stringify({
+      A: "4 m/s²",
+      B: "100 m/s²",
+      C: "2 m/s²",
+      D: "0.25 m/s²"
+    }),
+    correct_option: "A",
+    marks: 1,
+    is_numerical: true,
+    formula_used: "a = (v_f - v_i) / t = (20 - 0) / 5 = 4 m/s²",
+    solution_rubric: "From rest means v_i = 0. a = 20 / 5 = 4 m/s².",
+    cognitive_level: "Application",
+    trap_note: "Do not multiply! Divide velocity change by time."
+  },
+
+  // =========================================================================
+  // CLASS 10 PHYSICS
+  // =========================================================================
   {
     question_id: "PHY10-SHM-001",
     board: "BSEK_KARACHI",
@@ -124,54 +317,6 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     trap_note: "Examiner Trap: Students incorrectly think mass increases time period. Formula T = 2π√(L/g) has NO 'm' term!"
   },
   {
-    question_id: "PHY10-SHM-002",
-    board: "BSEK_KARACHI",
-    grade: 10,
-    subject: "Physics",
-    chapter_name: "Simple Harmonic Motion & Waves",
-    section: "SECTION_A",
-    text_en: "At which position is the velocity of an oscillating mass attached to a spring maximum?",
-    text_ur: "اسپرنگ سے بندھے ماس کی رفتار کس مقام پر زیادہ سے زیادہ ہوتی ہے؟",
-    options_json: JSON.stringify({
-      A: "At extreme positions",
-      B: "At mean position",
-      C: "Halfway between mean and extreme",
-      D: "It remains constant everywhere"
-    }),
-    correct_option: "B",
-    marks: 1,
-    is_numerical: false,
-    formula_used: "v = ω√(x₀² - x²)",
-    solution_rubric: "At mean position x = 0, so velocity v is maximum. At extreme position x = x₀, velocity momentarily drops to zero.",
-    cognitive_level: "Knowledge",
-    trap_note: "Do not confuse Acceleration (max at extreme) with Velocity (max at mean)!"
-  },
-  {
-    question_id: "PHY10-SHM-003",
-    board: "BSEK_KARACHI",
-    grade: 10,
-    subject: "Physics",
-    chapter_name: "Simple Harmonic Motion & Waves",
-    section: "SECTION_A",
-    text_en: "What is the frequency of a simple pendulum whose time period is 0.5 seconds?",
-    text_ur: "ایک سادہ پینڈولم کا ٹائم پیریڈ 0.5 سیکنڈ ہے۔ اس کی فریکوئنسی کیا ہوگی؟",
-    options_json: JSON.stringify({
-      A: "0.5 Hz",
-      B: "1.0 Hz",
-      C: "2.0 Hz",
-      D: "4.0 Hz"
-    }),
-    correct_option: "C",
-    marks: 1,
-    is_numerical: true,
-    formula_used: "f = 1 / T",
-    solution_rubric: "f = 1 / 0.5 = 2.0 Hz. Frequency is the reciprocal of time period.",
-    cognitive_level: "Application",
-    trap_note: "Reciprocal math trap: 1 / 0.5 = 2, not 0.5!"
-  },
-
-  // --- PHYSICS 10: Geometrical Optics ---
-  {
     question_id: "PHY10-OPT-001",
     board: "BSEK_KARACHI",
     grade: 10,
@@ -194,31 +339,6 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     cognitive_level: "Knowledge",
     trap_note: "Convex lens has POSITIVE focus, but Convex mirror has NEGATIVE focus!"
   },
-  {
-    question_id: "PHY10-OPT-002",
-    board: "BSEK_KARACHI",
-    grade: 10,
-    subject: "Physics",
-    chapter_name: "Geometrical Optics",
-    section: "SECTION_A",
-    text_en: "When light enters from water (n=1.33) into air (n=1.00), the refracted ray will:",
-    text_ur: "جب روشنی پانی سے ہوا میں داخل ہوتی ہے تو ریفریکٹڈ شعاع:",
-    options_json: JSON.stringify({
-      A: "Bend towards the normal",
-      B: "Bend away from the normal",
-      C: "Pass undeviated",
-      D: "Reflect back completely at all angles"
-    }),
-    correct_option: "B",
-    marks: 1,
-    is_numerical: false,
-    formula_used: "n₁ sin(θ₁) = n₂ sin(θ₂)",
-    solution_rubric: "When traveling from a denser medium to a rarer medium, light speeds up and bends away from the normal.",
-    cognitive_level: "Understanding",
-    trap_note: "Denser to Rarer = Bends AWAY from Normal."
-  },
-
-  // --- PHYSICS 10: Current Electricity ---
   {
     question_id: "PHY10-CURR-001",
     board: "BSEK_KARACHI",
@@ -243,7 +363,9 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     trap_note: "Students mistakenly add 6 + 3 = 9 (which is Series, not Parallel!)."
   },
 
-  // --- CHEMISTRY 10: Chemical Equilibrium ---
+  // =========================================================================
+  // CLASS 10 CHEMISTRY
+  // =========================================================================
   {
     question_id: "CHM10-EQ-001",
     board: "BSEK_KARACHI",
@@ -268,31 +390,6 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     trap_note: "Reaction NEVER stops in dynamic equilibrium!"
   },
   {
-    question_id: "CHM10-EQ-002",
-    board: "BSEK_KARACHI",
-    grade: 10,
-    subject: "Chemistry",
-    chapter_name: "Chemical Equilibrium",
-    section: "SECTION_A",
-    text_en: "For the reaction N₂(g) + 3H₂(g) ⇌ 2NH₃(g), the unit of equilibrium constant Kc is:",
-    text_ur: "ری ایکشن N₂ + 3H₂ ⇌ 2NH₃ کے لیے ایکویلیبریم کانسٹنٹ Kc کا یونٹ کیا ہے؟",
-    options_json: JSON.stringify({
-      A: "No units",
-      B: "mol⁻² · dm⁶",
-      C: "mol² · dm⁻⁶",
-      D: "mol · dm⁻³"
-    }),
-    correct_option: "B",
-    marks: 1,
-    is_numerical: true,
-    formula_used: "Kc = [NH₃]² / ([N₂][H₂]³)",
-    solution_rubric: "Unit = (mol/dm³)² / ((mol/dm³) * (mol/dm³)³) = 1 / (mol/dm³)² = mol⁻² · dm⁶.",
-    cognitive_level: "Application",
-    trap_note: "Always calculate Δn = products - reactants = 2 - 4 = -2, so (mol/dm³)⁻² = mol⁻² · dm⁶."
-  },
-
-  // --- CHEMISTRY 10: Acids, Bases & Salts ---
-  {
     question_id: "CHM10-ACID-001",
     board: "BSEK_KARACHI",
     grade: 10,
@@ -316,7 +413,9 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     trap_note: "pH scale: 0-3 strong acid, 7 neutral, 11-14 strong base."
   },
 
-  // --- BIOLOGY 10: Gaseous Exchange ---
+  // =========================================================================
+  // CLASS 10 BIOLOGY
+  // =========================================================================
   {
     question_id: "BIO10-GAS-001",
     board: "BSEK_KARACHI",
@@ -339,29 +438,6 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     solution_rubric: "Alveoli are microscopic air sacs surrounded by dense capillary networks where O₂ and CO₂ diffuse across moist single-layered epithelium.",
     cognitive_level: "Knowledge",
     trap_note: "Bronchioles only conduct air; actual exchange occurs solely in alveoli."
-  },
-  {
-    question_id: "BIO10-GAS-002",
-    board: "BSEK_KARACHI",
-    grade: 10,
-    subject: "Biology",
-    chapter_name: "Gaseous Exchange",
-    section: "SECTION_A",
-    text_en: "During vigorous exercise, human muscle cells perform anaerobic respiration producing:",
-    text_ur: "سخت ورزش کے دوران پٹھوں کے خلیات این ایروبک سانس کے ذریعے کیا بناتے ہیں؟",
-    options_json: JSON.stringify({
-      A: "Ethanol and CO₂",
-      B: "Lactic acid only",
-      C: "Glucose and oxygen",
-      D: "Citric acid"
-    }),
-    correct_option: "B",
-    marks: 1,
-    is_numerical: false,
-    formula_used: "Glucose -> 2 Lactic Acid + 2 ATP",
-    solution_rubric: "In animals/humans, anaerobic breakdown of glucose yields lactic acid, causing temporary muscle fatigue. Ethanol is formed in yeast/plants.",
-    cognitive_level: "Understanding",
-    trap_note: "Ethanol is for Yeast fermentation; Lactic Acid is for Human muscles!"
   }
 ];
 
@@ -377,19 +453,19 @@ export const FALLBACK_PRACTICALS: PracticalItem[] = [
       {
         q: "Why is an ammeter always connected in series and voltmeter in parallel?",
         a: "An ammeter has very low internal resistance so it measures circuit current without reducing it. A voltmeter has very high internal resistance so it draws negligible current from the branch.",
-        keywords: ["low resistance", "high resistance", "series", "parallel", "negligible current"],
+        keywords: ["low", "resistance", "high", "series", "parallel", "negligible", "current"],
         marks: 4
       },
       {
         q: "What does the slope of a V-I graph represent?",
         a: "The slope of the Potential Difference (V) versus Current (I) graph (ΔV / ΔI) represents the electrical resistance (R) of the conductor in ohms.",
-        keywords: ["slope", "resistance", "ohms", "delta v", "delta i", "r"],
+        keywords: ["slope", "resistance", "ohms", "delta", "potential"],
         marks: 4
       },
       {
         q: "Why must the conductor's temperature remain constant during this experiment?",
         a: "Ohm's Law holds true only at constant temperature because increase in temperature increases internal lattice vibrations, which increases the resistance.",
-        keywords: ["temperature", "constant", "resistance increases", "vibrations"],
+        keywords: ["temperature", "constant", "resistance", "vibrations"],
         marks: 4
       }
     ]
@@ -404,13 +480,13 @@ export const FALLBACK_PRACTICALS: PracticalItem[] = [
       {
         q: "What is parallax and how do you remove it?",
         a: "Parallax is the apparent relative shift between two objects when the observer's eye is moved sideways. It is removed when the tip of the search pin and the inverted image tip coincide without separation.",
-        keywords: ["parallax", "apparent shift", "coincide", "tips", "eye movement"],
+        keywords: ["parallax", "apparent", "shift", "coincide", "tips", "eye"],
         marks: 4
       },
       {
         q: "What is the nature of image formed by a convex lens when object is beyond 2F?",
         a: "The image is real, inverted, diminished in size, and formed between F and 2F on the other side of the lens.",
-        keywords: ["real", "inverted", "diminished", "between f and 2f"],
+        keywords: ["real", "inverted", "diminished", "between"],
         marks: 4
       }
     ]
@@ -427,40 +503,19 @@ export const FALLBACK_PRACTICALS: PracticalItem[] = [
       {
         q: "Why is oxalic acid preferred as a primary standard in volumetric analysis?",
         a: "Oxalic acid (C₂H₂O₄·2H₂O) is available in extremely high purity, is non-hygroscopic (does not absorb moisture from air), and has a stable known molar mass.",
-        keywords: ["primary standard", "purity", "non-hygroscopic", "stable", "moisture"],
+        keywords: ["primary", "standard", "purity", "hygroscopic", "moisture", "molar"],
         marks: 4
       },
       {
         q: "Why is phenolphthalein indicator used instead of methyl orange in this titration?",
         a: "This is a titration between a strong base (NaOH) and a weak acid (oxalic acid). The equivalence point is weakly basic (pH 8-9), which exactly matches phenolphthalein's color change range (colorless to light pink).",
-        keywords: ["phenolphthalein", "strong base", "weak acid", "equivalence point", "pink", "ph 8"],
+        keywords: ["phenolphthalein", "strong", "base", "weak", "acid", "pink", "equivalence"],
         marks: 4
       },
       {
         q: "Why is the first rough titration reading discarded?",
         a: "The rough reading is only to locate the approximate end point quickly. Official board marking requires two consecutive concordant readings differing by no more than 0.1 ml.",
-        keywords: ["rough reading", "discard", "concordant", "0.1", "approximate"],
-        marks: 4
-      }
-    ]
-  },
-  {
-    id: 4,
-    subject: "Chemistry",
-    class_level: 10,
-    experiment_title: "Identification of Acid Radical (Chloride & Carbonate)",
-    apparatus: "Test tubes, Test tube holder, Dilute HCl, Silver Nitrate (AgNO₃), Lime water, Barium Chloride.",
-    viva_questions: [
-      {
-        q: "How do you confirm the presence of Carbonate (CO₃²⁻) radical?",
-        a: "Add dilute HCl to the salt. Vigorous effervescence of colorless, odorless gas (CO₂) is evolved, which turns fresh lime water milky due to calcium carbonate formation.",
-        keywords: ["effervescence", "co2", "lime water", "milky", "dilute hcl"],
-        marks: 4
-      },
-      {
-        q: "Which reagent confirms Chloride (Cl⁻) ion and what is the precipitate?",
-        a: "Add dilute nitric acid followed by Silver Nitrate (AgNO₃) solution. A curdy white precipitate of Silver Chloride (AgCl) forms, which is completely soluble in excess ammonium hydroxide (NH₄OH).",
-        keywords: ["silver nitrate", "curdy white", "agcl", "soluble in ammonium hydroxide", "nh4oh"],
+        keywords: ["rough", "discard", "concordant", "0.1", "approximate"],
         marks: 4
       }
     ]
@@ -477,40 +532,19 @@ export const FALLBACK_PRACTICALS: PracticalItem[] = [
       {
         q: "Why are onion root tips selected for studying stages of mitosis?",
         a: "The apical meristem at the tip of growing onion roots contains actively and rapidly dividing cells, offering all progressive mitotic stages in a single tissue slice.",
-        keywords: ["apical meristem", "dividing cells", "root tip", "mitosis", "rapidly"],
+        keywords: ["apical", "meristem", "dividing", "root", "mitosis", "rapidly"],
         marks: 4
       },
       {
         q: "In which stage of mitosis are chromosomes aligned at the equatorial plate?",
         a: "In Metaphase. Chromosomes are fully condensed, distinct, attached to spindle fibers by their centromeres, and aligned along the central equatorial (metaphase) plate.",
-        keywords: ["metaphase", "equatorial plate", "spindle fibers", "centromere", "condensed"],
+        keywords: ["metaphase", "equatorial", "plate", "spindle", "centromere", "condensed"],
         marks: 4
       },
       {
         q: "What is the function of acetocarmine stain in squash preparation?",
         a: "Acetocarmine specifically stains nuclear material and chromosomes a prominent dark red/pink color while leaving the surrounding cytoplasm relatively clear.",
-        keywords: ["stain", "acetocarmine", "chromosomes", "nuclear", "dark red"],
-        marks: 4
-      }
-    ]
-  },
-  {
-    id: 6,
-    subject: "Biology",
-    class_level: 10,
-    experiment_title: "Demonstration of Transpiration in Potted Plant (Bell Jar)",
-    apparatus: "Well-watered potted plant, Bell jar, Glass plate, Vaseline, Polythene sheet.",
-    viva_questions: [
-      {
-        q: "Why is the pot and soil surface tightly covered with a polythene sheet?",
-        a: "To prevent direct evaporation of water from the moist soil surface into the bell jar, ensuring that droplets appearing inside are solely due to aerial leaf transpiration.",
-        keywords: ["polythene sheet", "soil", "evaporation", "transpiration", "leaf", "droplets"],
-        marks: 4
-      },
-      {
-        q: "Which surface of a dicot leaf has a higher density of stomata?",
-        a: "The lower epidermis of a dorsiventral dicot leaf has significantly more stomata to minimize water loss from direct sunlight exposure.",
-        keywords: ["lower epidermis", "stomata", "dicot", "water loss", "sunlight"],
+        keywords: ["stain", "acetocarmine", "chromosomes", "nuclear", "dark"],
         marks: 4
       }
     ]

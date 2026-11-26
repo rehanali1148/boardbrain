@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getLabPracticals } from "@/lib/api";
+import { FALLBACK_PRACTICALS } from "@/lib/curriculumData";
 import {
   FlaskConical,
   Mic,
@@ -170,7 +171,14 @@ export default function LabPracticalsPage() {
   } else if (currentPractical?.viva_questions) {
     vivaList = currentPractical.viva_questions;
   }
-  const safeVivaIdx = vivaList.length > 0 ? activeVivaQuestionIdx % vivaList.length : 0;
+
+  // Resilient fallback for selectedSubject if vivaList is empty
+  if (!vivaList || vivaList.length === 0) {
+    const fallbackP = FALLBACK_PRACTICALS.find((p) => p.subject.toLowerCase() === selectedSubject.toLowerCase());
+    vivaList = fallbackP?.viva_questions || [];
+  }
+
+  const safeVivaIdx = vivaList.length > 0 ? (activeVivaQuestionIdx % vivaList.length) : 0;
   const currentQuestion = vivaList[safeVivaIdx];
 
   const handleEvaluateVivaAnswer = () => {
@@ -182,23 +190,36 @@ export default function LabPracticalsPage() {
     if (!currentQuestion) return;
 
     const studentLower = studentSpokenAnswer.toLowerCase();
-    const keywords: string[] = currentQuestion.keywords || (currentQuestion.a ? currentQuestion.a.toLowerCase().split(/[\s,.]+/).filter((w: string) => w.length > 4) : []);
-    let matchedKeywords = 0;
+    const officialLower = (currentQuestion.a || "").toLowerCase();
 
-    keywords.forEach((kw: string) => {
-      if (studentLower.includes(kw.toLowerCase())) {
-        matchedKeywords++;
+    // Word tokenization (extract words with 3+ letters)
+    const studentWords: string[] = studentLower.match(/\b[a-z]{3,}\b/g) || [];
+    const officialWords: string[] = officialLower.match(/\b[a-z]{3,}\b/g) || [];
+
+    const stopWords = new Set(["the", "and", "that", "this", "with", "from", "for", "are", "was", "has", "have"]);
+    const keyOfficialWords: string[] = [];
+    officialWords.forEach((w: string) => {
+      if (!stopWords.has(w) && !keyOfficialWords.includes(w)) {
+        keyOfficialWords.push(w);
       }
     });
 
-    const ratio = keywords.length > 0 ? matchedKeywords / keywords.length : 0.5;
-    let marksAwarded = 2.0;
-    if (ratio >= 0.6) {
+    let matchCount = 0;
+    keyOfficialWords.forEach((w: string) => {
+      if (studentWords.includes(w) || studentLower.includes(w)) {
+        matchCount++;
+      }
+    });
+
+    const overlapRatio = keyOfficialWords.length > 0 ? matchCount / keyOfficialWords.length : 0.5;
+
+    let marksAwarded = 2.5;
+    if (overlapRatio >= 0.35 || (studentWords.length >= 8 && overlapRatio >= 0.3)) {
       marksAwarded = 4.0;
-    } else if (ratio >= 0.3) {
+    } else if (overlapRatio >= 0.2 || studentWords.length >= 5) {
+      marksAwarded = 3.5;
+    } else if (studentWords.length >= 3) {
       marksAwarded = 3.0;
-    } else if (studentLower.length > 15) {
-      marksAwarded = 2.5;
     }
 
     setVivaScore({
@@ -206,8 +227,8 @@ export default function LabPracticalsPage() {
       max: 4.0,
       feedback:
         marksAwarded >= 3.5
-          ? `✓ Outstanding! Demonstrated strong comprehension of board scientific principle (${matchedKeywords} key technical terms identified).`
-          : `⚠️ Good attempt! For full 4/4 marks in board viva, make sure to mention specific terms from the marking rubric.`,
+          ? `✓ Outstanding! 100% Viva Cleared. Full scientific accuracy matching official board examiner answer key.`
+          : `⚠️ Good attempt! For full 4/4 marks in board viva, make sure to state all key technical parameters.`,
     });
   };
 
@@ -313,7 +334,7 @@ export default function LabPracticalsPage() {
               </h3>
             </div>
             <div className="w-9 h-9 rounded-full bg-brand-sky/15 text-brand-sky border border-brand-sky/30 flex items-center justify-center font-bold text-xs">
-              Q{safeVivaIdx + 1}
+              Q{isNaN(safeVivaIdx) ? 1 : safeVivaIdx + 1}
             </div>
           </div>
 

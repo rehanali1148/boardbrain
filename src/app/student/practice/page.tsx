@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
 import { getChapters, getQuestions, submitBlitz, getMistakeVault } from "@/lib/api";
+import { FALLBACK_CHAPTERS } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import NastaliqText from "@/components/urdu/NastaliqText";
 import {
@@ -41,7 +42,10 @@ export default function PracticeBlitzPage() {
         const chData = await getChapters(boardKey, grade, selectedSubject);
         setChapters(chData);
         if (chData.length > 0) {
-          setSelectedChapter(chData[0].chapter_name);
+          const exists = chData.some((c) => c.chapter_name === selectedChapter);
+          if (!exists) {
+            setSelectedChapter(chData[0].chapter_name);
+          }
         }
         const vData = await getMistakeVault();
         setVaultItems(vData);
@@ -125,7 +129,14 @@ export default function PracticeBlitzPage() {
           {(["Physics", "Chemistry", "Biology"] as const).map((sub) => (
             <button
               key={sub}
-              onClick={() => setSelectedSubject(sub)}
+              onClick={() => {
+                setSelectedSubject(sub);
+                const grade = user?.class_grade || 10;
+                const defaultChs = FALLBACK_CHAPTERS[`${sub}_${grade}`] || FALLBACK_CHAPTERS[`${sub}_10`] || [];
+                if (defaultChs.length > 0) {
+                  setSelectedChapter(defaultChs[0].chapter_name);
+                }
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 selectedSubject === sub
                   ? "bg-brand-emerald text-slate-950 shadow-sm"
