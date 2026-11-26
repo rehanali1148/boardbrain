@@ -13,13 +13,15 @@ import {
   AlertCircle,
   HelpCircle,
   ChevronRight,
-  ArrowRight
+  ArrowRight,
+  Send,
+  RotateCcw
 } from "lucide-react";
 
 export default function LabPracticalsPage() {
   const [practicals, setPracticals] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"viva" | "spotting" | "table_audit">("viva");
-  const [selectedSubject, setSelectedSubject] = useState<string>("Physics");
+  const [selectedSubject, setSelectedSubject] = useState<"Physics" | "Chemistry" | "Biology">("Physics");
   const [loading, setLoading] = useState<boolean>(true);
 
   // Audio Viva Simulator State
@@ -27,6 +29,7 @@ export default function LabPracticalsPage() {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [studentSpokenAnswer, setStudentSpokenAnswer] = useState<string>("");
   const [vivaScore, setVivaScore] = useState<any>(null);
+  const [micStatusText, setMicStatusText] = useState<string>("");
 
   // Spotting Flashcard State
   const [spottingIdx, setSpottingIdx] = useState<number>(0);
@@ -40,8 +43,13 @@ export default function LabPracticalsPage() {
   const [titrationR3, setTitrationR3] = useState("10.0");
   const [tableValidation, setTableValidation] = useState<any>(null);
 
+  // Load practicals whenever selectedSubject changes
   useEffect(() => {
     async function load() {
+      setLoading(true);
+      setActiveVivaQuestionIdx(0);
+      setStudentSpokenAnswer("");
+      setVivaScore(null);
       try {
         const data = await getLabPracticals(selectedSubject, 10);
         setPracticals(data);
@@ -102,20 +110,93 @@ export default function LabPracticalsPage() {
     },
   ];
 
+  // Real Speech-to-Text via Web Speech API (No fake hardcoded answer)
   const handleStartRecording = () => {
-    setIsRecording(true);
-    // Simulate speech-to-text input
-    setTimeout(() => {
-      setStudentSpokenAnswer(
-        "An ammeter is connected in series because it has very low resistance so it measures full current without altering voltage. Voltmeter has high resistance so connected in parallel."
-      );
+    if (typeof window === "undefined") return;
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setMicStatusText("Speech recognition not supported in this browser. Please type below!");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        setMicStatusText("Listening to your microphone... speak clearly.");
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((res: any) => res[0].transcript)
+          .join(" ");
+        setStudentSpokenAnswer(transcript);
+      };
+
+      recognition.onerror = (err: any) => {
+        setIsRecording(false);
+        setMicStatusText("Microphone access ended. You can type or edit your answer.");
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+        setMicStatusText("Audio captured. Click 'Evaluate My Answer' below.");
+      };
+
+      recognition.start();
+    } catch (e) {
       setIsRecording(false);
-      setVivaScore({
-        marks: 4.0,
-        max: 4.0,
-        feedback: "✓ Excellent. Both 'low resistance for ammeter' and 'high resistance for voltmeter' keywords identified.",
-      });
-    }, 2500);
+      setMicStatusText("Please type your spoken answer directly in the box.");
+    }
+  };
+
+  const handleEvaluateVivaAnswer = () => {
+    if (!studentSpokenAnswer.trim()) {
+      alert("Please speak or type your answer before evaluation!");
+      return;
+    }
+
+    const currentP = practicals[0];
+    const vivaQuestions = currentP?.viva_questions || [];
+    const currentQ = vivaQuestions[activeVivaQuestionIdx % Math.max(1, vivaQuestions.length)];
+
+    if (!currentQ) return;
+
+    const studentLower = studentSpokenAnswer.toLowerCase();
+    const keywords: string[] = currentQ.keywords || [];
+    let matchedKeywords = 0;
+
+    keywords.forEach((kw) => {
+      if (studentLower.includes(kw.toLowerCase())) {
+        matchedKeywords++;
+      }
+    });
+
+    const ratio = keywords.length > 0 ? matchedKeywords / keywords.length : 0.5;
+    let marksAwarded = 2.0;
+    if (ratio >= 0.7) {
+      marksAwarded = 4.0;
+    } else if (ratio >= 0.4) {
+      marksAwarded = 3.0;
+    } else if (studentLower.length > 15) {
+      marksAwarded = 2.5;
+    }
+
+    setVivaScore({
+      marks: marksAwarded,
+      max: 4.0,
+      feedback:
+        marksAwarded >= 3.5
+          ? `✓ Outstanding! Identified key examiner concepts (${matchedKeywords}/${keywords.length} core concepts stated).`
+          : `⚠️ Partial credit. You explained the basic concept, but examiners look for specific terms like: ${keywords.slice(0, 3).join(", ")}.`,
+    });
   };
 
   const handleAuditTable = () => {
@@ -139,7 +220,9 @@ export default function LabPracticalsPage() {
   };
 
   const currentPractical = practicals[0];
-  const vivaList = currentPractical?.viva_questions_json ? JSON.parse(currentPractical.viva_questions_json) : [];
+  const vivaList = currentPractical?.viva_questions || [];
+  const safeVivaIdx = vivaList.length > 0 ? activeVivaQuestionIdx % vivaList.length : 0;
+  const currentQuestion = vivaList[safeVivaIdx];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -191,18 +274,21 @@ export default function LabPracticalsPage() {
       </div>
 
       {/* Subject Filter Bar */}
-      <div className="flex gap-2">
-        {["Physics", "Chemistry", "Biology"].map((sub) => (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-400 font-semibold mr-1">Select Subject:</span>
+        {(["Physics", "Chemistry", "Biology"] as const).map((sub) => (
           <button
             key={sub}
             onClick={() => setSelectedSubject(sub)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               selectedSubject === sub
-                ? "bg-slate-800 text-white border border-brand-sky/60 shadow-sm"
-                : "bg-slate-900/60 text-slate-400 hover:bg-slate-800"
+                ? "bg-brand-sky text-slate-950 shadow-md font-black"
+                : "bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700"
             }`}
           >
-            {sub}
+            {sub === "Physics" && "⚡ Physics"}
+            {sub === "Chemistry" && "🧪 Chemistry"}
+            {sub === "Biology" && "🔬 Biology"}
           </button>
         ))}
       </div>
@@ -213,14 +299,14 @@ export default function LabPracticalsPage() {
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
               <span className="text-[10px] font-bold text-brand-sky uppercase tracking-wider">
-                External Examiner Bench Oral (4 Marks)
+                External Examiner Bench Oral ({selectedSubject} • 4 Marks)
               </span>
               <h3 className="text-base font-bold text-white mt-0.5">
-                {currentPractical?.experiment_title || "Verification of Ohm's Law (V = IR)"}
+                {currentPractical?.experiment_title || `${selectedSubject} Core Practical`}
               </h3>
             </div>
-            <div className="w-8 h-8 rounded-full bg-brand-sky/15 text-brand-sky flex items-center justify-center font-bold text-xs">
-              Q{activeVivaQuestionIdx + 1}
+            <div className="w-9 h-9 rounded-full bg-brand-sky/15 text-brand-sky border border-brand-sky/30 flex items-center justify-center font-bold text-xs">
+              Q{safeVivaIdx + 1}
             </div>
           </div>
 
@@ -231,14 +317,16 @@ export default function LabPracticalsPage() {
               <span>External Examiner Asks:</span>
             </div>
             <p className="text-sm md:text-base font-semibold text-slate-100">
-              {vivaList[activeVivaQuestionIdx]?.q || "Why is an ammeter always connected in series and voltmeter in parallel?"}
+              {currentQuestion?.q || "Explain the underlying board scientific principle of this experiment."}
             </p>
           </div>
 
           {/* Student Audio / Spoken Input Area */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-400">Your Spoken Answer (Speech-to-Text):</label>
+              <label className="text-xs font-bold text-slate-300">
+                Your Answer (Speak or Type):
+              </label>
               <button
                 onClick={handleStartRecording}
                 disabled={isRecording}
@@ -262,38 +350,60 @@ export default function LabPracticalsPage() {
               </button>
             </div>
 
+            {micStatusText && (
+              <p className="text-[11px] text-sky-400 font-medium italic">
+                {micStatusText}
+              </p>
+            )}
+
             <textarea
               rows={3}
               value={studentSpokenAnswer}
               onChange={(e) => setStudentSpokenAnswer(e.target.value)}
-              placeholder="Your transcribed spoken answer will appear here, or you can type directly..."
+              placeholder="Speak using the button above or type your answer here..."
               className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-brand-sky"
             />
+
+            <div className="flex justify-start">
+              <button
+                onClick={handleEvaluateVivaAnswer}
+                disabled={!studentSpokenAnswer.trim()}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Evaluate My Answer</span>
+              </button>
+            </div>
           </div>
 
           {/* Examiner Score & Rubric Feedback */}
           {vivaScore && (
-            <div className="bg-emerald-950/20 border border-emerald-800/50 rounded-xl p-4 space-y-2">
+            <div className="bg-emerald-950/20 border border-emerald-800/50 rounded-xl p-4 space-y-2 animate-in fade-in">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-brand-emerald">
                   ✓ Examiner Score: {vivaScore.marks} / {vivaScore.max} Marks
                 </span>
-                <span className="text-[10px] text-emerald-400 font-semibold">100% Viva Cleared</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">Rubric Evaluated</span>
               </div>
-              <p className="text-xs text-emerald-300">{vivaScore.feedback}</p>
-              <div className="pt-2 text-[11px] text-slate-400 font-mono">
-                <b>Official Model Answer:</b> {vivaList[activeVivaQuestionIdx]?.a}
+              <p className="text-xs text-emerald-300 leading-relaxed">{vivaScore.feedback}</p>
+              <div className="pt-2 text-[11px] text-slate-400 border-t border-slate-800">
+                <b className="text-slate-300">Official Board Answer Key:</b>{" "}
+                {currentQuestion?.a}
               </div>
             </div>
           )}
 
           {/* Next Viva Question Navigator */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+            <span className="text-xs text-slate-500">
+              Question {safeVivaIdx + 1} of {Math.max(1, vivaList.length)}
+            </span>
             <button
               onClick={() => {
-                setActiveVivaQuestionIdx((prev) => (prev + 1) % vivaList.length);
+                setActiveVivaQuestionIdx((prev) => (prev + 1) % Math.max(1, vivaList.length));
                 setStudentSpokenAnswer("");
                 setVivaScore(null);
+                setMicStatusText("");
               }}
               className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors"
             >
@@ -313,7 +423,7 @@ export default function LabPracticalsPage() {
                 Microscope & Specimen Spotting Station
               </span>
               <h3 className="text-base font-bold text-white mt-0.5">
-                {SPOTTING_DECK[spottingIdx].spot}
+                {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].spot}
               </h3>
             </div>
 
@@ -342,7 +452,7 @@ export default function LabPracticalsPage() {
           <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
             <div className="text-xs text-slate-400 font-semibold uppercase">Microscope Field of View:</div>
             <p className="text-sm md:text-base text-slate-200 italic leading-relaxed">
-              "{SPOTTING_DECK[spottingIdx].image_desc}"
+              &quot;{SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].image_desc}&quot;
             </p>
           </div>
 
@@ -358,14 +468,14 @@ export default function LabPracticalsPage() {
             ) : (
               <div className="bg-emerald-950/20 border border-emerald-800/50 rounded-xl p-4 space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-brand-emerald">
-                    ✓ Identification: {SPOTTING_DECK[spottingIdx].title}
-                  </h4>
-                  <span className="text-xs text-brand-amber font-bold">2/2 Marks</span>
+                  <span className="text-xs font-bold text-brand-emerald">
+                    Identified: {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].title}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-semibold">2.0 Marks</span>
                 </div>
-                <div className="text-xs text-slate-300 space-y-1">
-                  <p className="font-semibold text-slate-200">Required Board Diagnostic Features:</p>
-                  {SPOTTING_DECK[spottingIdx].identifying_reasons.map((r, i) => (
+                <div className="space-y-1 text-xs text-slate-300">
+                  <p className="font-semibold text-slate-400">Board Identifying Characteristics:</p>
+                  {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].identifying_reasons.map((r, i) => (
                     <p key={i}>{r}</p>
                   ))}
                 </div>
@@ -373,11 +483,7 @@ export default function LabPracticalsPage() {
             )}
           </div>
 
-          {/* Next Spotting Station */}
-          <div className="flex justify-between items-center pt-2 border-t border-slate-800">
-            <span className="text-xs text-slate-400">
-              Station {spottingIdx + 1} of {SPOTTING_DECK.length}
-            </span>
+          <div className="flex justify-end pt-2">
             <button
               onClick={() => {
                 setSpottingIdx((prev) => (prev + 1) % SPOTTING_DECK.length);
@@ -385,106 +491,77 @@ export default function LabPracticalsPage() {
                 setTimerSeconds(60);
                 setTimerActive(false);
               }}
-              className="px-4 py-2 rounded-lg bg-brand-emerald text-slate-950 font-bold text-xs flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors"
             >
-              <span>Next Station</span>
+              <span>Next Specimen Slide</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* TAB 3: OBSERVATION TABLE VALIDATOR (8 MARKS) */}
+      {/* TAB 3: OBSERVATION TABLE VALIDATOR */}
       {activeTab === "table_audit" && (
         <div className="bg-[#10192D] border border-slate-800 rounded-2xl p-5 space-y-5">
           <div className="border-b border-slate-800 pb-3">
             <span className="text-[10px] font-bold text-brand-amber uppercase tracking-wider">
-              Observation Table & Math Auditor (8 Marks)
+              8-Mark Concordant Observation Table Auditor
             </span>
             <h3 className="text-base font-bold text-white mt-0.5">
-              Acid-Base Titration: Standardization of HCl using 0.1M NaOH
+              Volumetric Titration Reading Verification (Burette cm³)
             </h3>
-            <p className="text-xs text-slate-400">
-              Audit your raw burette readings for concordancy before writing in your official copy.
-            </p>
           </div>
 
-          {/* Interactive Table Input */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left text-slate-300">
-              <thead className="bg-slate-900 uppercase font-bold text-slate-400">
-                <tr>
-                  <th className="p-3">Reading No.</th>
-                  <th className="p-3">Initial Burette (ml)</th>
-                  <th className="p-3">Final Burette (ml)</th>
-                  <th className="p-3">Volume Used (ml)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                <tr>
-                  <td className="p-3 font-semibold">Reading 1 (Rough)</td>
-                  <td className="p-3">0.0</td>
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={titrationR1}
-                      onChange={(e) => setTitrationR1(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-20 text-slate-200"
-                    />
-                  </td>
-                  <td className="p-3">{titrationR1} ml</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-brand-emerald">Reading 2</td>
-                  <td className="p-3">0.0</td>
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={titrationR2}
-                      onChange={(e) => setTitrationR2(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-20 text-slate-200"
-                    />
-                  </td>
-                  <td className="p-3">{titrationR2} ml</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-brand-emerald">Reading 3 (Concordant)</td>
-                  <td className="p-3">0.0</td>
-                  <td className="p-3">
-                    <input
-                      type="text"
-                      value={titrationR3}
-                      onChange={(e) => setTitrationR3(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-20 text-slate-200"
-                    />
-                  </td>
-                  <td className="p-3">{titrationR3} ml</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-slate-400 font-medium">Burette Reading 1 (Rough):</label>
+              <input
+                type="text"
+                value={titrationR1}
+                onChange={(e) => setTitrationR1(e.target.value)}
+                className="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-brand-amber"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-400 font-medium">Burette Reading 2:</label>
+              <input
+                type="text"
+                value={titrationR2}
+                onChange={(e) => setTitrationR2(e.target.value)}
+                className="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-brand-amber"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-400 font-medium">Burette Reading 3:</label>
+              <input
+                type="text"
+                value={titrationR3}
+                onChange={(e) => setTitrationR3(e.target.value)}
+                className="mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:border-brand-amber"
+              />
+            </div>
           </div>
 
           <button
             onClick={handleAuditTable}
-            className="w-full py-2.5 rounded-xl bg-brand-amber text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-brand-amber text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors"
           >
-            Audit Table for Board Concordance (Difference &lt;= 0.1 ml)
+            Validate Concordance (Examiner Rule ≤ 0.1 ml)
           </button>
 
-          {/* Validation Feedback */}
           {tableValidation && (
             <div
-              className={`p-4 rounded-xl text-xs space-y-1.5 border ${
+              className={`p-4 rounded-xl border text-xs space-y-1 animate-in fade-in ${
                 tableValidation.is_concordant
-                  ? "bg-emerald-950/20 border-emerald-800 text-emerald-300"
-                  : "bg-rose-950/20 border-rose-800 text-rose-300"
+                  ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-300"
+                  : "bg-rose-950/20 border-rose-800/40 text-rose-300"
               }`}
             >
-              <p className="font-bold">{tableValidation.message}</p>
-              {tableValidation.is_concordant && (
-                <p>
-                  Mean Volume Used = <b>{tableValidation.mean_volume} ml</b>. Ready for M1V1 = M2V2 calculation.
-                </p>
+              <div className="font-bold">{tableValidation.message}</div>
+              {tableValidation.mean_volume && (
+                <div className="text-slate-300 font-mono text-[11px] pt-1">
+                  Accepted Mean Concordant Volume (V) = {tableValidation.mean_volume} cm³
+                </div>
               )}
             </div>
           )}

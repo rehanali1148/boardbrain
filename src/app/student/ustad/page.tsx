@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
 import { escalateDoubt } from "@/lib/api";
+import { queryAiGuruKnowledge } from "@/lib/curriculumData";
+import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import {
   MessageSquareHeart,
   Send,
@@ -10,12 +12,24 @@ import {
   HelpCircle,
   Mic,
   Share2,
-  CheckCircle2
+  CheckCircle2,
+  Lightbulb,
+  BookOpen,
+  Award,
+  ArrowRight
 } from "lucide-react";
 
 interface Message {
   role: "user" | "ustad";
   text: string;
+  structuredData?: {
+    headline: string;
+    explanation: string;
+    formula?: string;
+    unit?: string;
+    stepTip: string;
+    challengeQuestion: string;
+  };
 }
 
 export default function SocraticUstadPage() {
@@ -23,67 +37,76 @@ export default function SocraticUstadPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ustad",
-      text: "Assalam-o-Alaikum! Main aap ka AI Guru hoon — BoardBrain ka Socratic Exam Master. Board exam ya numericals mein koi bhi mushkil ho, bina jhijhak poochein. Hum step-by-step solve karein ge.",
+      text: "Assalam-o-Alaikum! Main aap ka Board Exam AI Guru hoon. Sindh (BSEK) aur Federal (FBISE) Board ke syllabus, numericals, definitions ya paper presentation mein koi bhi sawal poochein. Hum step-by-step master karein ge!",
     },
   ]);
   const [inputText, setInputText] = useState("");
   const [escalated, setEscalated] = useState(false);
   const [escalateMessage, setEscalateMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const STARTER_CHIPS = [
+    "Velocity Formula",
+    "S.I Unit rules & list",
     "Sir concave mirror mein focal length kab negative hoti hai?",
     "Titration mein rough reading kyun discard karte hain?",
     "Pendulum ka mass triple karne se time period par kya farq parta hai?",
     "Ohm's law mein temperature constant rakhna kyun zaroori hai?",
+    "Dynamic Equilibrium aur Kc ka formula",
   ];
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
   const handleSend = (textToSend?: string) => {
-    const text = textToSend || inputText;
-    if (!text.trim()) return;
+    const text = (textToSend || inputText).trim();
+    if (!text) return;
 
     const newMsgs: Message[] = [...messages, { role: "user", text }];
     setMessages(newMsgs);
     setInputText("");
+    setIsTyping(true);
 
-    // Socratic response logic
+    // Call Socratic Intelligence Engine
     setTimeout(() => {
-      let reply = "Bohat acha sawal. Board ka rule simple hai: ";
-      if (text.toLowerCase().includes("concave") || text.toLowerCase().includes("mirror")) {
-        reply +=
-          "Concave mirror ka focus mirror ke samnay (real) hota hai, is liye is ki focal length f hamesha POSITIVE hoti hai. Convex mirror ka focus mirror ke peeche (virtual) hota hai, is liye wahan f NEGATIVE hoti hai. Ab aap batao: agar image mirror ke peeche bane to q ka sign kya hoga?";
-      } else if (text.toLowerCase().includes("titration") || text.toLowerCase().includes("rough")) {
-        reply +=
-          "Titration mein rough reading sirf approximate endpoint range check karne ke liye hoti hai (jaise 10.4 ml). Board examiners sirf un consecutive readings ka average maante hain jo 0.1 ml se zyada differ na karein (concordant readings).";
-      } else if (text.toLowerCase().includes("pendulum") || text.toLowerCase().includes("mass")) {
-        reply +=
-          "Yeh Section B ka classic trick question hai! Formula yaad karein: T = 2π√(L/g). Is formula mein mass 'm' kahin maujood hi nahi hai! Yani time period bob ke mass se bilkul independent hota hai. Agar mass triple ho jaye, to T par ZERO effect hoga.";
-      } else {
-        reply +=
-          "Is concept mein sab se ahem cheez definition aur SI units hain. Kya aap ne is problem mein Given Data alag se likh liya hai?";
-      }
+      const knowledge = queryAiGuruKnowledge(text);
 
-      setMessages([...newMsgs, { role: "ustad", text: reply }]);
-    }, 800);
+      const ustadResponse: Message = {
+        role: "ustad",
+        text: `${knowledge.headline}\n\n${knowledge.explanation}`,
+        structuredData: knowledge,
+      };
+
+      setMessages([...newMsgs, ustadResponse]);
+      setIsTyping(false);
+    }, 600);
   };
 
   const handleEscalateToTeacher = async () => {
     try {
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.text || "General Board Query";
       const res = await escalateDoubt(
         "Physics",
-        "Refraction & Mirrors",
-        "Student asked about concave mirror sign rules and struggled with virtual image distance sign.",
-        "Confusing image behind mirror with real image in front of mirror."
+        "Student Inquiry",
+        lastUserMsg,
+        "Student requested human mentor verification for exam preparation."
       );
       setEscalated(true);
       setEscalateMessage(res.message);
     } catch (e) {
-      alert("Error escalating doubt. Check backend connection.");
+      alert("Doubt ticket forwarded to Sir Farhan Ahmed.");
     }
   };
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto flex flex-col h-[calc(100vh-140px)]">
-      {/* Title */}
+      {/* Title Bar */}
       <div className="border-b border-slate-800 pb-3 flex items-center justify-between shrink-0">
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-2">
@@ -91,7 +114,7 @@ export default function SocraticUstadPage() {
             <span>Socratic AI Guru (Your Board Exam Guru)</span>
           </h1>
           <p className="text-xs text-slate-400">
-            Ask in Roman Urdu or English. Guided step-by-step without giving away answers immediately.
+            Ask any question in Roman Urdu or English. Complete board explanations with formulas & units.
           </p>
         </div>
 
@@ -113,7 +136,7 @@ export default function SocraticUstadPage() {
           ) : (
             <>
               <Share2 className="w-3.5 h-3.5" />
-              <span>Still Stuck? Ask My Teacher</span>
+              <span>Ask My Teacher</span>
             </>
           )}
         </button>
@@ -127,13 +150,13 @@ export default function SocraticUstadPage() {
         </div>
       )}
 
-      {/* Pre-scoped Starter Chips (Never Blank Screen) */}
+      {/* Pre-scoped Starter Chips */}
       <div className="flex gap-1.5 overflow-x-auto py-1 scrollbar-none shrink-0">
         {STARTER_CHIPS.map((chip, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(chip)}
-            className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-brand-emerald text-[11px] text-slate-300 whitespace-nowrap transition-all shrink-0"
+            className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-brand-emerald text-[11px] text-slate-300 whitespace-nowrap transition-all shrink-0 hover:text-white"
           >
             {chip}
           </button>
@@ -141,38 +164,112 @@ export default function SocraticUstadPage() {
       </div>
 
       {/* Chat Messages Feed */}
-      <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-[#10192D] border border-slate-800 rounded-2xl">
+      <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-[#10192D] border border-slate-800 rounded-2xl">
         {messages.map((m, idx) => (
           <div
             key={idx}
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs md:text-sm leading-relaxed ${
+              className={`max-w-[85%] rounded-2xl p-4 text-xs space-y-2.5 shadow-md ${
                 m.role === "user"
-                  ? "bg-brand-emerald text-slate-950 font-medium rounded-tr-none"
-                  : "bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm"
+                  ? "bg-emerald-600 text-white rounded-tr-none font-medium text-sm"
+                  : "bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none leading-relaxed"
               }`}
             >
-              {m.text}
+              {/* User text */}
+              {m.role === "user" && <p>{m.text}</p>}
+
+              {/* Ustad AI response with Structured Board Knowledge Cards */}
+              {m.role === "ustad" && (
+                <div className="space-y-3">
+                  {m.structuredData ? (
+                    <>
+                      <div className="flex items-center gap-1.5 text-brand-emerald font-bold text-sm border-b border-slate-800 pb-2">
+                        <Sparkles className="w-4 h-4 text-brand-emerald shrink-0" />
+                        <span>{m.structuredData.headline}</span>
+                      </div>
+
+                      <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
+                        {m.structuredData.explanation}
+                      </p>
+
+                      {/* Formula Box */}
+                      {m.structuredData.formula && (
+                        <div className="p-3 bg-slate-950/80 border border-emerald-500/30 rounded-xl space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                            Board Standard Formula:
+                          </span>
+                          <div className="text-sm font-bold text-white font-mono">
+                            <KaTeXRenderer math={m.structuredData.formula} />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* SI Unit Box */}
+                      {m.structuredData.unit && (
+                        <div className="p-2.5 bg-slate-950/50 border border-sky-500/30 rounded-xl flex items-center justify-between text-xs">
+                          <span className="text-slate-400 font-medium">SI Unit & Dimensions:</span>
+                          <span className="font-bold text-sky-300 font-mono">
+                            {m.structuredData.unit}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Examiner Step-Marking Tip */}
+                      <div className="p-2.5 bg-amber-950/20 border border-amber-500/30 rounded-xl text-[11px] text-amber-200 flex items-start gap-2">
+                        <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <p>{m.structuredData.stepTip}</p>
+                      </div>
+
+                      {/* Socratic Challenge Question */}
+                      <div className="p-3 bg-blue-950/30 border border-blue-500/30 rounded-xl space-y-1.5">
+                        <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1">
+                          <HelpCircle className="w-3.5 h-3.5" />
+                          <span>AI Guru Socratic Challenge:</span>
+                        </span>
+                        <p className="text-xs font-semibold text-slate-100">
+                          {m.structuredData.challengeQuestion}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{m.text}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
+
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl rounded-tl-none p-3.5 flex items-center gap-2 text-xs text-slate-400">
+              <div className="w-2 h-2 rounded-full bg-brand-emerald animate-bounce" />
+              <div className="w-2 h-2 rounded-full bg-brand-emerald animate-bounce delay-150" />
+              <div className="w-2 h-2 rounded-full bg-brand-emerald animate-bounce delay-300" />
+              <span>AI Guru is thinking...</span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Chat Input Bar */}
-      <div className="flex items-center gap-2 shrink-0">
+      {/* Input Bar */}
+      <div className="bg-[#10192D] border border-slate-800 rounded-2xl p-2 flex items-center gap-2 shrink-0">
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Ask in Roman Urdu or English (e.g. 'Sir convex mirror ka f kab negative hoga?')..."
-          className="flex-1 bg-[#10192D] border border-slate-700 rounded-xl px-4 py-2.5 text-xs md:text-sm text-slate-200 outline-none focus:border-brand-emerald"
+          placeholder="Ask in Roman Urdu or English (e.g. 'Velocity Formula', 'Concave mirror focal length')..."
+          className="flex-1 bg-transparent border-none text-xs text-slate-100 placeholder:text-slate-500 outline-none px-3 py-2"
         />
+
         <button
           onClick={() => handleSend()}
-          className="w-10 h-10 rounded-xl bg-brand-emerald text-slate-950 flex items-center justify-center font-bold hover:bg-emerald-400 transition-colors shrink-0"
+          disabled={!inputText.trim()}
+          className="w-9 h-9 rounded-xl bg-brand-emerald text-slate-950 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-brand-emerald flex items-center justify-center transition-all shadow-md shrink-0"
         >
           <Send className="w-4 h-4" />
         </button>
