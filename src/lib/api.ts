@@ -368,6 +368,16 @@ export async function askGuru(payload: {
   return fetchWithAuth("/student/guru", { method: "POST", body: JSON.stringify(payload) });
 }
 
+/** True when the server has an AI engine configured. */
+export async function getAiStatus(): Promise<boolean> {
+  try {
+    const d = await fetchWithAuth("/student/ai-status");
+    return !!d?.enabled;
+  } catch {
+    return false;
+  }
+}
+
 /** Fresh AI practice MCQs for one chapter (same shape as bank questions, with is_ai = true). */
 export async function getAiPractice(grade: number, subject: string, chapter: string, count = 5): Promise<any[]> {
   const data = await fetchWithAuth("/student/ai-practice", {

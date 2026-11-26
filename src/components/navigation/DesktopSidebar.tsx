@@ -32,7 +32,7 @@ export default function DesktopSidebar() {
     { label: "Step Numericals & OCR", href: "/student/numericals", icon: BookOpen },
     { label: "Dual Study Cards", href: "/student/dual-cards", icon: Award },
     { label: "15-Mark Lab Arena", href: "/student/labs", icon: FlaskConical },
-    { label: "Board Radar (Cyclical)", href: "/student/radar", icon: Flame },
+    { label: "High-Yield Topic Radar", href: "/student/radar", icon: Flame },
     { label: "Socratic AI Guru", href: "/student/ustad", icon: MessageSquareHeart },
   ];
 

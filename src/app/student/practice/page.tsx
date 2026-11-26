@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/authContext";
-import { getChapters, getQuestions, getAiPractice } from "@/lib/api";
+import { getChapters, getQuestions, getAiPractice, getAiStatus } from "@/lib/api";
 import { recordAttempts, getVault, clearVaultItem } from "@/lib/learnerModel";
 import { FALLBACK_CHAPTERS, FALLBACK_QUESTIONS } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
@@ -192,6 +192,10 @@ export default function PracticeBlitzPage() {
   };
 
   // AI practice: fresh questions for this chapter when the bank runs out
+  const [aiOn, setAiOn] = useState(false);
+  useEffect(() => {
+    getAiStatus().then(setAiOn);
+  }, []);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   useEffect(() => {
@@ -479,6 +483,7 @@ export default function PracticeBlitzPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            {aiOn && (
             <button
               onClick={handleAiPractice}
               disabled={aiLoading}
@@ -487,6 +492,7 @@ export default function PracticeBlitzPage() {
               <Sparkles className="w-4 h-4" />
               <span>{aiLoading ? "Making new questions..." : "5 new AI questions on this chapter"}</span>
             </button>
+            )}
             {blitzResult ? (
               <button
                 onClick={handleReset}

@@ -266,6 +266,11 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     return NextResponse.json(filtered.length > 0 ? filtered : [FALLBACK_PRACTICALS[0]]);
   }
 
+  // Whether AI features are switched on (no secrets returned)
+  if (path === "student/ai-status") {
+    return NextResponse.json({ enabled: aiEnabled() });
+  }
+
   // Everything under teacher/ is staff-only
   if (path.startsWith("teacher/")) {
     const denied = requireStaff(req);

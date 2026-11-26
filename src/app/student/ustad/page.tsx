@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
 import { escalateDoubt, askGuru } from "@/lib/api";
 import { learnerSummaryForAI, recordGuruQuestion } from "@/lib/learnerModel";
+import { solveNumerical } from "@/lib/guruSolver";
+import { matchBank } from "@/lib/guruBank";
 import { queryAiGuruKnowledge } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import {
@@ -50,12 +52,15 @@ export default function SocraticUstadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const STARTER_CHIPS = [
+    "Ohm ka qanoon samjhao",
+    "A car starts from rest and reaches 20 m/s in 5 s. Find acceleration",
+    "Mitosis aur meiosis mein farq",
+    "Le Chatelier's principle kya hai?",
+    "Moles in 9 g of H2O",
+    "Three resistors 2 ohm, 3 ohm and 6 ohm in parallel",
+    "Object 12 cm from concave mirror, focal length 8 cm, image?",
     "🎯 High-Yield Practice Paper (80/20 Strategy)",
-    "⚡ Formula Selector (Kinematics & Optics)",
-    "💡 Ratta-Free Memory Tricks (Mnemonics)",
-    "⚠️ Board Examiner Red-Pen Cut Points",
     "✍️ Topper Paper Presentation Blueprint",
-    "Velocity Formula",
     "S.I Unit rules & list",
     "Sir concave mirror mein focal length kab negative hoti hai?",
     "Titration mein rough reading kyun discard karte hain?",
@@ -83,6 +88,28 @@ export default function SocraticUstadPage() {
     setInputText("");
     setIsTyping(true);
     recordGuruQuestion(text);
+
+    // 0. Instant answers, no AI: numerical solver first, then the prepared answer bank
+    const local = solveNumerical(text) || matchBank(text, user?.class_grade);
+    if (local) {
+      setMessages([
+        ...newMsgs,
+        {
+          role: "ustad",
+          text: `${local.headline}\n\n${local.explanation}`,
+          structuredData: {
+            headline: local.headline,
+            explanation: local.explanation,
+            formula: local.formula,
+            unit: local.unit,
+            stepTip: local.stepTip,
+            challengeQuestion: local.challengeQuestion,
+          },
+        },
+      ]);
+      setIsTyping(false);
+      return;
+    }
 
     // 1. Real AI Guru (Gemini), personalised with this student's learner profile
     try {

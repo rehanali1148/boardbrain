@@ -1,43 +1,53 @@
 /**
- * Server-only Gemini helper. Switched on by the GEMINI_API_KEY environment variable (set it in Vercel).
- * Without the key every call throws AI_OFF and the pages fall back to their built-in content.
+ * Server-only AI helper with a free-first fallback chain:
+ *   1. Gemini (free tier works; GEMINI_API_KEY or GOOGLE_API_KEY), main model then a lighter one if rate-limited
+ *   2. Ollama on our own server (OLLAMA_URL, optional OLLAMA_TOKEN, OLLAMA_MODEL), used when Gemini is off or out of quota
+ *   3. If neither is available: throws AI_OFF and the pages use their built-in content.
  */
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-
-const apiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+const GEMINI_MODELS = [process.env.GEMINI_MODEL || "gemini-2.5-flash", process.env.GEMINI_FALLBACK_MODEL || "gemini-2.5-flash-lite"];
+const geminiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+const ollamaUrl = () => (process.env.OLLAMA_URL || "").replace(/\/+$/, "");
 
 export function aiEnabled() {
-  return !!apiKey();
+  return !!geminiKey() || !!ollamaUrl();
 }
 
-export async function geminiJSON<T>(opts: {
+type Turn = { role: "user" | "model"; text: string };
+interface AIOptions {
   system: string;
-  turns: { role: "user" | "model"; text: string }[];
+  turns: Turn[];
   schema: any;
   temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;
-}): Promise<T> {
-  const key = apiKey();
-  if (!key) throw new Error("AI_OFF");
+}
 
+async function withTimeout<T>(ms: number, fn: (signal: AbortSignal) => Promise<T>): Promise<T> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 25000);
+  const timer = setTimeout(() => ctrl.abort(), ms);
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    return await fn(ctrl.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callGemini<T>(model: string, o: AIOptions): Promise<T> {
+  return withTimeout(o.timeoutMs ?? 22000, async (signal) => {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      signal: ctrl.signal,
+      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey() },
+      signal,
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: opts.system }] },
-        contents: opts.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+        systemInstruction: { parts: [{ text: o.system }] },
+        contents: o.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
         generationConfig: {
-          temperature: opts.temperature ?? 0.4,
-          maxOutputTokens: opts.maxTokens ?? 2048,
+          temperature: o.temperature ?? 0.4,
+          maxOutputTokens: o.maxTokens ?? 2048,
           responseMimeType: "application/json",
-          responseSchema: opts.schema,
-          ...(MODEL.includes("2.5") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+          responseSchema: o.schema,
+          ...(model.includes("2.5") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
@@ -52,12 +62,76 @@ export async function geminiJSON<T>(opts: {
     const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("") || "";
     if (!text) throw new Error("AI_EMPTY");
     return JSON.parse(text) as T;
-  } finally {
-    clearTimeout(timer);
-  }
+  });
 }
 
-/** Very small per-instance rate limit so one device cannot burn the AI quota. */
+/** Gemini's schema uses upper-case types; Ollama expects standard JSON Schema. */
+function toJsonSchema(s: any): any {
+  if (Array.isArray(s)) return s.map(toJsonSchema);
+  if (!s || typeof s !== "object") return s;
+  const out: any = {};
+  for (const [k, v] of Object.entries(s)) out[k] = k === "type" && typeof v === "string" ? v.toLowerCase() : toJsonSchema(v);
+  return out;
+}
+
+async function callOllama<T>(o: AIOptions): Promise<T> {
+  // A CPU-only server is slow, so it gets a longer budget (the route allows 60 s)
+  return withTimeout(Math.max(o.timeoutMs ?? 0, 50000), async (signal) => {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (process.env.OLLAMA_TOKEN) headers.Authorization = `Bearer ${process.env.OLLAMA_TOKEN}`;
+    const res = await fetch(`${ollamaUrl()}/api/chat`, {
+      method: "POST",
+      headers,
+      signal,
+      body: JSON.stringify({
+        model: process.env.OLLAMA_MODEL || "qwen2.5:3b",
+        stream: false,
+        format: toJsonSchema(o.schema),
+        options: { temperature: o.temperature ?? 0.4, num_predict: Math.min(o.maxTokens ?? 1200, 1200) },
+        messages: [
+          { role: "system", content: o.system },
+          ...o.turns.map((t) => ({ role: t.role === "model" ? "assistant" : "user", content: t.text })),
+        ],
+      }),
+    });
+    if (!res.ok) throw new Error(`AI_HTTP_${res.status}`);
+    const data = await res.json();
+    const text = data?.message?.content || "";
+    if (!text) throw new Error("AI_EMPTY");
+    return JSON.parse(text) as T;
+  });
+}
+
+/** Runs the free-first chain and reports which engine answered. */
+export async function aiJSON<T>(o: AIOptions): Promise<{ data: T; engine: string }> {
+  let lastErr: any = new Error("AI_OFF");
+  if (geminiKey()) {
+    for (const model of GEMINI_MODELS) {
+      try {
+        return { data: await callGemini<T>(model, o), engine: model };
+      } catch (e: any) {
+        lastErr = e;
+        // Bad key or bad request will not get better with another Gemini model
+        if (/AI_HTTP_(400|401|403)/.test(String(e?.message))) break;
+      }
+    }
+  }
+  if (ollamaUrl()) {
+    try {
+      return { data: await callOllama<T>(o), engine: "ollama" };
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+
+/** Back-compatible helper used by the routes. */
+export async function geminiJSON<T>(o: AIOptions): Promise<T> {
+  return (await aiJSON<T>(o)).data;
+}
+
+/** Very small per-instance rate limit so one device cannot burn the free quota. */
 const hits = new Map<string, number[]>();
 export function rateLimited(id: string, perMinute = 15) {
   const now = Date.now();
