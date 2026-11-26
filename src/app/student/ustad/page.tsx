@@ -47,6 +47,11 @@ export default function SocraticUstadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const STARTER_CHIPS = [
+    "🎯 Target Guess Paper (Guaranteed Passing)",
+    "⚡ Formula Selector (Kinematics & Optics)",
+    "💡 Ratta-Free Memory Tricks (Mnemonics)",
+    "⚠️ Board Examiner Red-Pen Cut Points",
+    "✍️ Topper Paper Presentation Blueprint",
     "Velocity Formula",
     "S.I Unit rules & list",
     "Sir concave mirror mein focal length kab negative hoti hai?",

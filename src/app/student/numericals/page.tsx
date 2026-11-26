@@ -126,6 +126,53 @@ export default function NumericalsPage() {
             </p>
           </div>
 
+          {/* Quick Formula Picker Chips for Struggling Students */}
+          <div className="bg-[#10192D]/70 border border-slate-800 p-3 rounded-xl flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-[11px] font-bold text-brand-amber flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>⚡ Quick Formula Presets:</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setGivenData("Object distance p = 12 cm, Focal length f = 8 cm (Concave mirror)");
+                setFormulaText("1/f = 1/p + 1/q");
+                setCalcSteps("1/q = 1/f - 1/p = 1/8 - 1/12 = (3 - 2)/24 = 1/24 => q = 24");
+                setFinalAnswer("24");
+                setUnitText("cm");
+              }}
+              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition-colors"
+            >
+              Concave Mirror (1/f = 1/p + 1/q)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGivenData("Initial velocity vi = 10 m/s, Acceleration a = 2 m/s², Time t = 5 s");
+                setFormulaText("S = vi*t + 0.5*a*t²");
+                setCalcSteps("S = 10*(5) + 0.5*(2)*(5²) = 50 + 25 = 75");
+                setFinalAnswer("75");
+                setUnitText("m");
+              }}
+              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition-colors"
+            >
+              Kinematics Distance (S = vi·t + ½at²)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGivenData("Current I = 2 A, Resistance R = 6 Ω");
+                setFormulaText("V = I * R");
+                setCalcSteps("V = 2 * 6 = 12");
+                setFinalAnswer("12");
+                setUnitText("V");
+              }}
+              className="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition-colors"
+            >
+              Ohm's Law Voltage (V = I·R)
+            </button>
+          </div>
+
           {/* Form Inputs Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Step 1: Given Data */}

@@ -670,7 +670,67 @@ export function queryAiGuruKnowledge(question: string): {
     };
   }
 
-  // 10. General / Fallback Smart Guidance
+  // 10. Student Tool: Board Target Paper / Guess Paper (High Yield)
+  if (q.includes("target") || q.includes("guess") || q.includes("pass") || q.includes("pakka") || q.includes("important") || q.includes("repeat")) {
+    return {
+      headline: "🎯 BSEK 15-Year Target Paper & High-Yield Blueprint",
+      explanation: "Struggling students ke liye 15 saal ke past papers ka verified analysis: Har saal Section B & C mein 70% questions in 5 topics se aatay hain:\n1. Physics 10: Simple Harmonic Motion derivation & Ohm's Law graphical proof.\n2. Physics 9: 2nd & 3rd Equations of Motion & Newton's 2nd Law (F = ma).\n3. Chemistry 10: Law of Mass Action & Dynamic Equilibrium Kc derivation.\n4. Chemistry 9: Bohr's Atomic Model & Ionic vs Covalent bonding.\n5. Biology: Mitosis stages diagram & Nephron working.",
+      formula: "Rule of 80/20: Pehle ye 5 topics pakkay karein, 50%+ passing marks guaranteed secure ho jate hain!",
+      unit: "Weightage: Section B (40 Marks) + Section C (20 Marks)",
+      stepTip: "Examiner Tip: Target questions ko hamesha 605 Blue Cut Marker ki headings ke sath likhein taake examiner pehle nazar mein full marks de.",
+      challengeQuestion: "Aap pehle kis subject (Physics, Chemistry ya Biology) ka Target Paper unlock karna chahtay hain?"
+    };
+  }
+
+  // 11. Student Tool: Formula Selector (Kinematics & Numericals)
+  if (q.includes("formula") && (q.includes("kaun") || q.includes("picker") || q.includes("selector") || q.includes("lagana") || q.includes("choose") || q.includes("motion") || q.includes("equation"))) {
+    return {
+      headline: "⚡ Instant Numerical Formula Selector",
+      explanation: "Jab bhi Physics numerical aaye to ye Golden Rule follow karein:\n• Agar Distance (S) NAHI diya ➔ Use 1st Equation: v_f = v_i + a*t\n• Agar Final Velocity (v_f) NAHI di ➔ Use 2nd Equation: S = v_i*t + (1/2)*a*t²\n• Agar Time (t) NAHI diya ➔ Use 3rd Equation: 2*a*S = v_f² - v_i²\n• Body rest se start kare to: v_i = 0 m/s\n• Brakes lagein to: v_f = 0 m/s aur acceleration negative (-a).",
+      formula: "1st: v_f = v_i + a*t  |  2nd: S = v_i*t + 0.5*a*t²  |  3rd: 2aS = v_f² - v_i²",
+      unit: "Distance: meters (m), Time: seconds (s), Acceleration: m/s²",
+      stepTip: "Numerical shuru karte hi sab se pehle Given Data aur Required likhein. Is ke seedhay 1.0 mark miltay hain!",
+      challengeQuestion: "Agar aik problem mein v_i = 10 m/s, a = 2 m/s², aur t = 4 s ho, to Distance (S) ke liye kaun si equation lagay gi?"
+    };
+  }
+
+  // 12. Student Tool: Ratta-Free Memory Tricks (Mnemonics)
+  if (q.includes("mnemonic") || q.includes("ratta") || q.includes("trick") || q.includes("yaad") || q.includes("memory") || q.includes("reactivity")) {
+    return {
+      headline: "💡 Ratta-Free Urdu Memory Tricks (Mnemonics)",
+      explanation: "Mushkil concepts ko asaan Roman Urdu kahaniyon se yaad karein:\n• Reactivity Series: 'Kedar Nath Ka Mali Aloo Zara Pheekay Pakata Hai' (K, Na, Ca, Mg, Al, Zn, Fe, Pb, H).\n• Optics Sign: 'Concave mein Cave (Ghaar) andar hai = Real Focus = Positive (+). Convex phoola hua hai = Virtual Focus = Negative (-)'.\n• Trigonometry: 'Some People Have / Curly Brown Hair / Through Proper Brushing' (Sin=P/H, Cos=B/H, Tan=P/B).\n• Ohm's Triangle: V upar, I aur R neechay (V = I*R, I = V/R, R = V/I).",
+      formula: "Mental Model: Logic + Story = Exam hall mein zero confusion!",
+      unit: "Ratta zero, Concept 100%",
+      stepTip: "Exam hall mein answer sheet par sab se pehle rough margin mein mnemonic ka first letter likh lein taake bhool na jayein.",
+      challengeQuestion: "Kya aap ko Periodic Table ke pehle 20 elements ya Chemistry valencies ka koi short trick chahiye?"
+    };
+  }
+
+  // 13. Student Tool: Red-Pen Examiner Cut Points
+  if (q.includes("cut") || q.includes("deduct") || q.includes("marks") || q.includes("red pen") || q.includes("galti") || q.includes("examiner")) {
+    return {
+      headline: "⚠️ Board Examiner Red-Pen Marks Deduction Checklist",
+      explanation: "Students 2 safhay likhtay hain phir bhi marks kat jatay hain! Examiner in 4 galtiyon par marks kaat-ta hai:\n1. Missing SI Unit in Final Answer: -0.5 Mark seedha deduct hota hai!\n2. Direct Calculation without 'Given Data' heading: -1.0 Mark cut!\n3. Vector quantities (Force, Velocity) par direction na likhna: -0.5 Mark cut!\n4. Diagram mein label dono taraf phailana: -1.0 Mark (Board rule: Labels sirf RIGHT side par pencil se align karein).",
+      formula: "Full Marks Formula: Heading (Blue) + Definition + Formula + Diagram/Units",
+      unit: "Zero Careless Mistakes = 100% Score",
+      stepTip: "Final answer ke gird hamesha 605 marker se Box banayein aur unit bold likhein (e.g. [ Ans = 24 cm ]).",
+      challengeQuestion: "Kya aap apne Kisi numerical ya practical answer ka Red-Pen Audit karwana chahtay hain?"
+    };
+  }
+
+  // 14. Student Tool: Paper Presentation Blueprint
+  if (q.includes("presentation") || q.includes("paper") || q.includes("heading") || q.includes("marker") || q.includes("topper")) {
+    return {
+      headline: "✍️ BSEK & FBISE Board Topper Presentation Blueprint",
+      explanation: "Examiner ke pass sirf 2 minute hotay hain aik copy check karne ke liye. Presentation se 10 se 15 marks ka farq parta hai:\n• 605 Blue Cut Marker: Q. No aur Main Headings ke liye.\n• 604 Marker: Sub-headings (Definition, Principle, Unit, Working) ke liye.\n• Blue Ballpoint / Gel Pen: Body text aur theory ke liye (Red/Green pen sakhti se mamnoo hai!).\n• Space Rule: Har 2 short questions ke darmiyan 2 lines ka gap aur aik neat pencil line draw karein.\n• Calculation Margin: Page ki right side par 1 inch margin draw kar ke 'Rough Work' likhein.",
+      formula: "Topper Golden Rule: Neat copy = Examiner ka mood khush = Full marks!",
+      unit: "Presentation adds +10% to final aggregate",
+      stepTip: "Overwriting aur cutting se bachein. Agar galti ho jaye to sirf aik single horizontal line se cut karein, ink se scribble na karein.",
+      challengeQuestion: "Kya aap ko Topper Answer Sheet ka visual specimen dekhna hai?"
+    };
+  }
+
+  // 15. General / Fallback Smart Guidance
   return {
     headline: `Board Exam Guidance on: "${question}"`,
     explanation: `Bohat acha sawal! Board examination standards ke mutabiq is topic mein 3 cheezein zaroori hain: (1) Standard Board Definition, (2) Relevant Scientific Formula ya Law, aur (3) SI Units / Labelled Diagram.`,
