@@ -25,12 +25,15 @@ function clientId(req: NextRequest) {
 /**
  * Tokens: "demo_jwt_token_<role>_<ts>" for students, plus "_<signature>" for staff.
  * The staff signature is an HMAC keyed by the STAFF_PIN environment variable, so a student cannot forge a teacher token.
- * Without STAFF_PIN set, staff login is locked. (Real per-person accounts are still to come.)
+ * Without STAFF_PIN set, the PIN defaults to 1234 (pilot). Real per-person accounts are still to come.
  */
 const STAFF_ROLES = ["teacher", "campus_head"];
 
+/** Staff PIN: the STAFF_PIN env var, or 1234 until one is set (owner decision, 27 Nov 2026, pilot only). */
+const staffPin = () => process.env.STAFF_PIN || "1234";
+
 function staffSignature(role: string, ts: string) {
-  const secret = process.env.STAFF_PIN || "";
+  const secret = staffPin();
   return createHmac("sha256", `boardbrain-staff:${secret}`).update(`${role}.${ts}`).digest("hex").slice(0, 32);
 }
 
@@ -45,7 +48,7 @@ function roleFromRequest(req: NextRequest): string | null {
   if (!m) return null;
   const [, role, ts, sig] = m;
   if (!STAFF_ROLES.includes(role)) return role;
-  if (!process.env.STAFF_PIN || !sig) return null;
+  if (!sig) return null;
   const expected = staffSignature(role, ts);
   const ok = sig.length === expected.length && timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
   const fresh = Date.now() - Number(ts) < 14 * 24 * 3600 * 1000; // staff sessions last 14 days
@@ -514,7 +517,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     const requested = body.role_key || body.roleKey || "student_10";
     const roleKey = USER_PROFILES[requested] ? requested : "student_10";
     if (STAFF_ROLES.includes(roleKey)) {
-      const pin = process.env.STAFF_PIN;
+      const pin = staffPin();
       if (!pin) {
         return NextResponse.json({ detail: "STAFF_LOCKED: teacher login is not set up yet. Ask the school admin." }, { status: 403 });
       }
