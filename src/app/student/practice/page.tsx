@@ -170,8 +170,14 @@ export default function PracticeBlitzPage() {
         (q.chapter_name.toLowerCase().includes(chName.toLowerCase()) ||
           chName.toLowerCase().includes(q.chapter_name.toLowerCase()))
     );
-    return matches.length > 0 ? matches.length : 12;
+    return matches.length;
   };
+
+  // True when the chosen chapter has no questions yet and the list is filled from other chapters of the subject.
+  const sameChapter = (a: string, b: string) =>
+    a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase());
+  const showingOtherChapters =
+    !!selectedChapter && questions.length > 0 && !questions.some((q: any) => sameChapter(q.chapter_name || "", selectedChapter));
 
   const scorePct = blitzResult?.score_percentage ?? blitzResult?.percentage ?? 0;
   const correctCount = blitzResult?.correct_answers ?? blitzResult?.score ?? 0;
@@ -247,12 +253,18 @@ export default function PracticeBlitzPage() {
             const count = getChapterQuestionCount(ch.chapter_name);
             return (
               <option key={ch.chapter_name} value={ch.chapter_name}>
-                {ch.chapter_name} ({count} Board Qs)
+                {ch.chapter_name} ({count} {count === 1 ? "question" : "questions"})
               </option>
             );
           })}
         </select>
       </div>
+      {showingOtherChapters && (
+        <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-700/60 text-xs text-amber-200">
+          No questions for &quot;{selectedChapter}&quot; yet, so these come from other {selectedSubject} chapters.
+          <span className="block font-nastaliq mt-1" dir="rtl">اس باب کے سوالات ابھی موجود نہیں، اس لیے دوسرے ابواب کے سوالات دکھائے جا رہے ہیں۔</span>
+        </div>
+      )}
 
       {/* Main Blitz Questions Card Deck */}
       <div className="space-y-4">
@@ -287,7 +299,7 @@ export default function PracticeBlitzPage() {
                     <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 font-mono font-bold flex items-center justify-center text-[11px]">
                       {idx + 1}
                     </span>
-                    <span className="text-slate-400 font-medium">BSEK & AKU-EB Verified</span>
+                    <span className="text-slate-400 font-medium">BSEK & AKU-EB syllabus</span>
                     {q.cognitive_level && (
                       <span className="bg-slate-800 px-2 py-0.5 rounded text-[10px] font-semibold text-sky-400">
                         {q.cognitive_level}

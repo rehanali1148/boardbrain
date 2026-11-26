@@ -22,21 +22,10 @@ export default function OrientationVideoModal({
 }: OrientationVideoModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // No autoplay: the video waits for the viewer to press play (it used to start with sound on first login).
   useEffect(() => {
-    if (isOpen) {
-      // Attempt auto-play when opened
-      const timer = setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.play().catch(() => {
-            console.log("Autoplay blocked by browser policy, user can click play.");
-          });
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    } else {
-      if (videoRef.current) {
-        videoRef.current.pause();
-      }
+    if (!isOpen && videoRef.current) {
+      videoRef.current.pause();
     }
   }, [isOpen]);
 

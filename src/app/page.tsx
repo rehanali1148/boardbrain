@@ -61,7 +61,7 @@ export default function HomePage() {
         </h1>
 
         <p className="mt-5 text-base sm:text-xl text-slate-300 max-w-2xl font-normal leading-relaxed">
-          Built specifically for Sindh Board (BSEK) & Federal Board (FBISE). 
+          Built specifically for Sindh Board (BSEK) & Aga Khan University Examination Board (AKU-EB). 
           Empowering educators with 60-second exam generation and equipping students with personalized 24/7 AI tutoring.
         </p>
 

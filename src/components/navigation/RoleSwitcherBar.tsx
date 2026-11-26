@@ -2,14 +2,25 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
 import { UserCheck, Moon, Sun, ShieldAlert, Sparkles, LogIn, Play } from "lucide-react";
 import BoardBrainLogo from "./BoardBrainLogo";
 import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 
 export default function RoleSwitcherBar() {
-  const { user, roleKey, switchRole, isExamLightMode, toggleExamLightMode, isLoading } = useAuth();
+  const { user, roleKey, switchRole: setRole, isExamLightMode, toggleExamLightMode, isLoading } = useAuth();
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname() || "";
+
+  // Switching role also moves you to that role's home if you are on the other role's pages.
+  const switchRole = async (role: "student_10" | "student_09" | "teacher" | "campus_head") => {
+    await setRole(role);
+    const staff = role === "teacher" || role === "campus_head";
+    if (staff && pathname.startsWith("/student")) router.push("/teacher");
+    if (!staff && pathname.startsWith("/teacher")) router.push("/student");
+  };
 
   const isTeacherRole = roleKey === "teacher" || roleKey === "campus_head";
 

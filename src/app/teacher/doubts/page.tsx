@@ -17,35 +17,43 @@ export default function DoubtInboxPage() {
   const { user } = useAuth();
   const [doubts, setDoubts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [replyTextMap, setReplyTextMap] = useState<Record<number, string>>({});
-  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [replyTextMap, setReplyTextMap] = useState<Record<string, string>>({});
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [replyError, setReplyError] = useState<Record<string, string>>({});
 
   const fetchDoubts = async () => {
     try {
+      setLoadError(false);
       const data = await getTeacherDoubts(user?.campus || "Saddar", 10, "A");
-      setDoubts(data);
+      setDoubts(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.warn("Doubts fetch fallback:", e);
+      console.warn("Doubts fetch failed:", e);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (user?.role !== "teacher" && user?.role !== "campus_head") return;
     fetchDoubts();
   }, [user]);
 
-  const handleReply = async (doubtId: number) => {
+  const handleReply = async (doubtId: string) => {
     const text = replyTextMap[doubtId];
-    if (!text || !text.trim()) return;
-
+    if (!text || !text.trim()) {
+      setReplyError((prev) => ({ ...prev, [doubtId]: "Write a reply before sending." }));
+      return;
+    }
+    setReplyError((prev) => ({ ...prev, [doubtId]: "" }));
     setSubmittingId(doubtId);
     try {
       await replyDoubt(doubtId, text);
       await fetchDoubts();
       setReplyTextMap((prev) => ({ ...prev, [doubtId]: "" }));
     } catch (e) {
-      alert("Error sending teacher reply. Check connection.");
+      setReplyError((prev) => ({ ...prev, [doubtId]: "The reply could not be sent. Check your connection and try again." }));
     } finally {
       setSubmittingId(null);
     }
@@ -61,7 +69,7 @@ export default function DoubtInboxPage() {
             <span>Student Doubt Escalation Queue (Saddar Campus)</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Doubts escalated after 3 unsuccessful Socratic AI hints. Review and answer in 5 minutes before class.
+            Questions your students sent from the AI Guru with &quot;Ask my teacher&quot;.
           </p>
         </div>
         <span className="text-xs bg-brand-amber/15 text-brand-amber font-bold px-3 py-1 rounded-full border border-brand-amber/30">
@@ -71,11 +79,15 @@ export default function DoubtInboxPage() {
 
       {/* Doubts List */}
       <div className="space-y-4">
-        {loading ? (
-          <div className="p-8 text-center text-slate-400 text-xs">Loading Section Doubts...</div>
+        {loadError ? (
+          <div className="p-4 bg-rose-950/40 border border-rose-800 rounded-2xl text-center text-xs text-rose-200">
+            Doubts could not be loaded. Check your connection and reload the page.
+          </div>
+        ) : loading ? (
+          <div className="p-8 text-center text-slate-400 text-xs">Loading doubts...</div>
         ) : doubts.length === 0 ? (
           <div className="p-8 bg-[#10192D] border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
-            ✓ No pending doubt tickets. Your section is clear!
+            ✓ No doubts from students yet.
           </div>
         ) : (
           doubts.map((d) => (
@@ -95,7 +107,7 @@ export default function DoubtInboxPage() {
                   <div>
                     <h4 className="text-xs font-bold text-white">{d.student_name}</h4>
                     <span className="text-[10px] text-slate-400">
-                      Class {d.class_grade} • Section {d.section} • {d.campus} Campus
+                      Class {d.class_grade} • Section {d.section} • {d.campus || "Saddar"} Campus
                     </span>
                   </div>
                 </div>
@@ -118,17 +130,18 @@ export default function DoubtInboxPage() {
 
               {/* Student Attempt Summary */}
               <div className="space-y-1 text-xs">
-                <p className="text-slate-400 font-semibold">Student Attempted Step:</p>
-                <div className="p-3 bg-slate-900 rounded-xl text-slate-200 font-mono text-[11px] border border-slate-800">
-                  {d.student_attempt_summary}
+                <p className="text-slate-400 font-semibold">Student&apos;s question:</p>
+                <div className="p-3 bg-slate-900 rounded-xl text-slate-200 text-[11px] border border-slate-800">
+                  {d.student_attempt_summary || d.student_query || "(no text)"}
                 </div>
               </div>
 
-              {/* Detected Misconception */}
-              <div className="text-xs space-y-0.5">
-                <span className="text-brand-rose font-semibold">AI Compressed Misconception:</span>
-                <p className="text-slate-300 italic">{d.misconception}</p>
-              </div>
+              {d.misconception && (
+                <div className="text-xs space-y-0.5">
+                  <span className="text-brand-rose font-semibold">Likely misconception:</span>
+                  <p className="text-slate-300 italic">{d.misconception}</p>
+                </div>
+              )}
 
               {/* Existing Teacher Reply or Reply Input */}
               {d.status === "answered" ? (
@@ -156,6 +169,7 @@ export default function DoubtInboxPage() {
                       <span>{submittingId === d.id ? "Sending..." : "Send"}</span>
                     </button>
                   </div>
+                  {replyError[d.id] && <p className="text-[11px] text-rose-300">{replyError[d.id]}</p>}
                 </div>
               )}
             </div>

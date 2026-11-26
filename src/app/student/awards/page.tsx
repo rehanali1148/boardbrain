@@ -351,7 +351,7 @@ export default function StudentAwardsPage() {
                 <p className="text-slate-200 leading-relaxed mt-0.5">{selectedBadge.description}</p>
               </div>
               <div className="pt-2 border-t border-slate-800/80">
-                <p className="text-slate-400 font-medium">Official Board Requirement:</p>
+                <p className="text-slate-400 font-medium">Board requirement:</p>
                 <p className="text-brand-emerald font-semibold mt-0.5">{selectedBadge.criteria_text}</p>
               </div>
             </div>

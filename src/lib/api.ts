@@ -6,6 +6,7 @@ import {
   ChapterItem,
   PracticalItem
 } from "./curriculumData";
+import { generateExamPaper } from "./examGenerator";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
@@ -18,6 +19,9 @@ export interface UserProfile {
   section?: string;
   board: string;
   group_name?: string;
+  /** Teachers: the subject they teach and the sections they own, e.g. ["10-A", "10-B"]. */
+  subject?: string;
+  sections?: string[];
 }
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
@@ -79,7 +83,12 @@ export async function getChapters(board: string = "BSEK_KARACHI", grade: number 
   const rawSub = (subject || "Physics").trim();
   const subClean = rawSub.charAt(0).toUpperCase() + rawSub.slice(1).toLowerCase();
   const key = `${subClean}_${grade}`;
-  return FALLBACK_CHAPTERS[key] || FALLBACK_CHAPTERS[`${subClean}_10`] || FALLBACK_CHAPTERS["Physics_10"] || [];
+  return (FALLBACK_CHAPTERS[key] || []).map((c) => ({
+    ...c,
+    question_count: FALLBACK_QUESTIONS.filter(
+      (q) => q.grade === grade && q.subject.toLowerCase() === subClean.toLowerCase() && q.chapter_name.toLowerCase() === c.chapter_name.toLowerCase()
+    ).length,
+  }));
 }
 
 export async function getQuestions(
@@ -237,7 +246,7 @@ export async function submitBlitz(subject: string, chapter: string, answers: { q
         correct_option: q?.correct_option || "A",
         is_correct: isCorrect,
         examiner_feedback: isCorrect
-          ? "✓ Perfect! Concept verified against official board marking scheme."
+          ? "✓ Correct!"
           : `⚠️ Incorrect. ${q?.trap_note || "Remember to review the fundamental definition and formula."}`
       };
     });
@@ -343,6 +352,7 @@ export async function generateExam(payload: {
   exam_format: string;
   completed_chapters: string[];
   generate_variants: boolean;
+  seed?: number;
 }) {
   try {
     const data = await fetchWithAuth("/teacher/generate-exam", {
@@ -352,195 +362,20 @@ export async function generateExam(payload: {
     if (data && data.row_a_questions && data.row_b_questions) {
       return data;
     }
-  } catch (e) {
-    // Handled by resilient local generator fallback below
+  } catch (e: any) {
+    // A permission refusal must not be bypassed by the local fallback
+    if (String(e?.message || "").includes("TEACHER_ONLY")) throw e;
   }
 
-  // Resilient Exam Generator Fallback (Matches exact schema for page.tsx)
-  const sub = payload.subject || "Physics";
-  const gr = Number(payload.grade) || 10;
-  const is60 = payload.exam_format.includes("60");
-  const is40 = payload.exam_format.includes("40");
-  const totalMarks = is60 ? 60 : is40 ? 40 : 20;
-  const timeAllowed = is60 ? "3 Hours" : is40 ? "1.5 Hours" : "45 Minutes";
-
-  const mcqCount = is60 ? 12 : is40 ? 8 : 4;
-  const shortCount = is60 ? 6 : is40 ? 4 : 2;
-  const longCount = is60 ? 3 : is40 ? 2 : 1;
-
-  // Filter real questions by grade and subject
-  const subjectQuestions = FALLBACK_QUESTIONS.filter(
-    (q) => q.grade === gr && q.subject.toLowerCase() === sub.toLowerCase()
-  );
-  const pool = subjectQuestions.length >= 3 ? subjectQuestions : FALLBACK_QUESTIONS.filter((q) => q.subject.toLowerCase() === sub.toLowerCase());
-
-  const cleanOption = (text: string) => text.replace(/\s*\(Verified\)/gi, "").trim();
-
-  // Build Row A Questions
-  const rowA: any[] = [];
-  const rubrics: any[] = [];
-
-  // Section A: MCQs (1 Mark Each)
-  for (let i = 0; i < mcqCount; i++) {
-    const q = pool[i % pool.length];
-    let parsedOpts: any = { A: "Option A", B: "Option B", C: "Option C", D: "Option D" };
-    try { parsedOpts = JSON.parse(q.options_json); } catch (e) {}
-
-    const cleanOpts: Record<string, string> = {};
-    for (const [k, v] of Object.entries(parsedOpts)) {
-      cleanOpts[k] = cleanOption(String(v));
-    }
-
-    rowA.push({
-      section: "Section A",
-      text_en: q.text_en,
-      text_ur: q.text_ur,
-      options: JSON.stringify(cleanOpts),
-      marks: 1,
-      correct_option: q.correct_option
-    });
-  }
-
-  rubrics.push({
-    question_no: `Section A (Q1.1 - Q1.${mcqCount})`,
-    marks: mcqCount,
-    key: `1.0 Mark per correct MCQ bubble (${rowA.map((q, idx) => `Q1.${idx + 1}:${q.correct_option}`).join(", ")}). Incorrect or double-bubbles receive 0.`
-  });
-
-  // Section B: Short Reasoning Questions (4 Marks Each)
-  const shortTemplates = [
-    {
-      en: `Explain the physical significance of ${sub === "Chemistry" ? "Chemical Equilibrium and Kc value" : sub === "Biology" ? "Mitosis vs Meiosis in cell division" : "Simple Harmonic Motion and state its two necessary conditions"}.`,
-      ur: `سائنسی دلائل کے ساتھ مختصر وضاحت کریں اور دو بنیادی شرائط تحریر کریں۔`,
-      marks: 4,
-      key: `• Correct scientific definition / statement (1.5 Marks)\n• Mathematical formula or two necessary conditions (1.5 Marks)\n• Practical board example with proper terminology (1.0 Mark)`
-    },
-    {
-      en: `Differentiate between ${sub === "Chemistry" ? "Arrhenius Acid and Bronsted-Lowry Acid with equations" : sub === "Biology" ? "Aerobic and Anaerobic Respiration" : "Speed and Velocity with their respective SI units and vector nature"}.`,
-      ur: `مناسب مثالوں اور ایس آئی یونٹس کی مدد سے واضح فرق بیان کریں۔`,
-      marks: 4,
-      key: `• Distinction point 1 with reasoning (1.5 Marks)\n• Distinction point 2 with reasoning (1.5 Marks)\n• Proper chemical equation / formula with SI unit (1.0 Mark)`
-    },
-    {
-      en: `What is the role of ${sub === "Chemistry" ? "Catalyst in reversible reactions" : sub === "Biology" ? "Enzymes in biological metabolism" : "Friction in daily life and state two methods to reduce it"}?`,
-      ur: `روزمرہ زندگی میں اس کا کردار اور اس کو کم کرنے کے دو طریقے تحریر کریں۔`,
-      marks: 4,
-      key: `• Operational definition & mechanism (2.0 Marks)\n• Two clear board-approved methods/points (2.0 Marks)`
-    },
-    {
-      en: `Derive the mathematical relationship for ${sub === "Chemistry" ? "Kc for the reaction N2 + 3H2 <=> 2NH3" : sub === "Biology" ? "Cellular Respiration ATP production" : "Ohm's Law (V = I * R) with graphical verification"}.`,
-      ur: `ریاضیاتی مساوات اخذ کریں اور حتمی نتائج واضح کریں۔`,
-      marks: 4,
-      key: `• Initial statement of law/theory (1.0 Mark)\n• Step-by-step derivation without missing steps (2.0 Marks)\n• Final equation boxed with standard units (1.0 Mark)`
-    },
-    {
-      en: `Explain with a neat diagram ${sub === "Chemistry" ? "the structure of Rutherford's Atomic Model" : sub === "Biology" ? "the structure of a Nephron" : "Total Internal Reflection and Critical Angle"}.`,
-      ur: `صاف ستھری پنسل کی ڈایاگرام اور لیبلنگ کے ساتھ وضاحت کریں۔`,
-      marks: 4,
-      key: `• Neat pencil diagram with right-aligned labels (2.0 Marks)\n• Conceptual scientific explanation (2.0 Marks)`
-    },
-    {
-      en: `State the conditions required for ${sub === "Chemistry" ? "Dynamic Equilibrium in a closed system" : sub === "Biology" ? "Transpiration in plants" : "Resonance in oscillating bodies"}.`,
-      ur: `بنیادی شرائط اور سائنسی وجوہات درج کریں۔`,
-      marks: 4,
-      key: `• Complete list of conditions (2.0 Marks)\n• Scientific justification per board syllabus (2.0 Marks)`
-    }
-  ];
-
-  for (let i = 0; i < shortCount; i++) {
-    const t = shortTemplates[i % shortTemplates.length];
-    rowA.push({
-      section: "Section B",
-      text_en: t.en,
-      text_ur: t.ur,
-      marks: 4
-    });
-    rubrics.push({
-      question_no: `Section B (Q${i + 2})`,
-      marks: 4,
-      key: t.key
-    });
-  }
-
-  // Section C: Long / Numerical Question (8 Marks Each for Exact Math)
-  const longTemplates = [
-    {
-      en: sub === "Chemistry"
-        ? `Comprehensive Problem: 4.0 moles of H2 and 4.0 moles of I2 are reacted in a 1 dm³ vessel at 440°C. If Kc = 49, calculate the equilibrium concentration of HI. Show complete Given Data, Formula, Working, and Units.`
-        : sub === "Biology"
-        ? `Detailed Descriptive Question: Explain the mechanism of Breathing in humans (Inspiration and Expiration). Draw a neat labeled diagram of human respiratory system and describe adaptation of alveoli.`
-        : `Comprehensive Board Numerical: An object 4.0 cm high is placed at a distance of 12.0 cm in front of a concave mirror of focal length 8.0 cm. Calculate: (a) Position of the image (b) Height and nature of the image. Show complete Given Data, Formula, Working, and SI Units.`,
-      ur: `جامع تفصیلی سوال: تمام مرحلہ وار کیلکولیشن، ڈایاگرام اور ایس آئی یونٹس واضح طور پر درج کریں۔`,
-      marks: 8,
-      key: `• Step 1: Given Data with correct variable symbols & SI conversions (2.0 Marks)\n• Step 2: Formula declaration prior to substitution (2.0 Marks)\n• Step 3: Step-by-step arithmetic substitution without skipping lines (2.5 Marks)\n• Step 4: Final answer boxed with accurate SI unit (1.5 Marks)`
-    },
-    {
-      en: `Derive the Second Equation of Motion (S = vi*t + 0.5*a*t²) using Speed-Time Graph. State clearly the assumptions, initial conditions, and explain the physical meaning of total area under the slope.`,
-      ur: `سپیڈ ٹائم گراف کی مدد سے حرکت کی دوسری مساوات اخذ کریں۔`,
-      marks: 8,
-      key: `• Accurate speed-time graph drawn with pencil & labeled axes (2.0 Marks)\n• Area of rectangle + Area of triangle derivation steps (4.0 Marks)\n• Final boxed equation with SI unit note (2.0 Marks)`
-    },
-    {
-      en: `State Newton's Law of Universal Gravitation. Derive the mathematical expression for the Mass of Earth (M_e = g*R^2 / G). Compute numerical value of Mass of Earth using R = 6.4 x 10^6 m and G = 6.67 x 10^-11 N m^2/kg^2.`,
-      ur: `نیوٹن کا قانونِ کشش ثقل بیان کریں اور زمین کے وزن کی ریاضیاتی مساوات اخذ کریں۔`,
-      marks: 8,
-      key: `• Statement of Universal Law of Gravitation (2.0 Marks)\n• Complete derivation formula equating weight to gravitational force (3.0 Marks)\n• Numerical calculation of Mass of Earth with standard units 6.0 x 10^24 kg (3.0 Marks)`
-    }
-  ];
-
-  for (let i = 0; i < longCount; i++) {
-    const t = longTemplates[i % longTemplates.length];
-    rowA.push({
-      section: "Section C",
-      text_en: t.en,
-      text_ur: t.ur,
-      marks: 8
-    });
-    rubrics.push({
-      question_no: `Section C (Q${shortCount + i + 2})`,
-      marks: 8,
-      key: t.key
-    });
-  }
-
-  // Build Parallel Row B Variants (Anti-Cheating with shifted values/shuffled options)
-  const rowB: any[] = rowA.map((q) => {
-    if (q.section === "Section A") {
-      let opts: any = {};
-      try { opts = JSON.parse(q.options); } catch (e) {}
-      const keys = Object.keys(opts);
-      const reversedOpts: any = {};
-      reversedOpts["A"] = opts[keys[3] || "D"] || opts.A;
-      reversedOpts["B"] = opts[keys[2] || "C"] || opts.B;
-      reversedOpts["C"] = opts[keys[1] || "B"] || opts.C;
-      reversedOpts["D"] = opts[keys[0] || "A"] || opts.D;
-
-      return {
-        ...q,
-        text_en: `[ROW B] ${q.text_en}`,
-        options: JSON.stringify(reversedOpts),
-      };
-    }
-    return {
-      ...q,
-      text_en: `[ROW B PARALLEL VARIANT] ${q.text_en}`,
-    };
-  });
-
-  return {
-    total_marks: totalMarks,
-    time_allowed: timeAllowed,
-    row_a_questions: rowA,
-    row_b_questions: rowB,
-    rubrics: rubrics
-  };
+  // Offline fallback: the same generator the server uses
+  return generateExamPaper(payload);
 }
 
 export async function getTeacherDoubts(campus: string = "Saddar", classGrade: number = 10, section: string = "A") {
   return fetchWithAuth(`/teacher/doubts?campus=${campus}&class_grade=${classGrade}&section=${section}`);
 }
 
-export async function replyDoubt(doubtId: number, reply: string) {
+export async function replyDoubt(doubtId: string | number, reply: string) {
   return fetchWithAuth(`/teacher/doubts/${doubtId}/reply`, {
     method: "POST",
     body: JSON.stringify({ teacher_reply: reply }),
@@ -553,6 +388,27 @@ export async function getClassHeatmap(campus: string = "Saddar", classGrade: num
 
 export async function getTeacherGoldNotes(campus: string = "Saddar", classGrade: number = 10, subject: string = "Physics") {
   return fetchWithAuth(`/teacher/gold-notes?campus=${campus}&class_grade=${classGrade}&subject=${subject}`);
+}
+
+export async function pinGoldNote(note: {
+  topic: string;
+  gold_tip_text: string;
+  subject: string;
+  class_grade: number;
+  teacher_name: string;
+  campus: string;
+}) {
+  return fetchWithAuth("/teacher/gold-notes", { method: "POST", body: JSON.stringify(note) });
+}
+
+/** Gold notes as students see them (read-only, no teacher token needed). */
+export async function getStudentGoldNotes(classGrade: number = 10) {
+  try {
+    const data = await fetchWithAuth(`/curriculum/gold-notes?class_grade=${classGrade}`);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
 }
 
 // 5. Awards & Badges Gamification Suite
@@ -701,6 +557,7 @@ export interface StudentWallItem {
 }
 
 export interface ClassBadgesResponse {
+  is_sample?: boolean;
   campus: string;
   class_grade: number;
   section: string;

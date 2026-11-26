@@ -37,7 +37,7 @@ export default function SocraticUstadPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ustad",
-      text: "Assalam-o-Alaikum! Main aap ka Board Exam AI Guru hoon. Sindh (BSEK) aur Federal (FBISE) Board ke syllabus, numericals, definitions ya paper presentation mein koi bhi sawal poochein. Hum step-by-step master karein ge!",
+      text: "Assalam-o-Alaikum! Main aap ka Board Exam AI Guru hoon. Sindh Board (BSEK) aur Aga Khan Board (AKU-EB) ke syllabus, numericals, definitions ya paper presentation mein koi bhi sawal poochein. Hum step-by-step master karein ge!",
     },
   ]);
   const [inputText, setInputText] = useState("");

@@ -452,7 +452,7 @@ export default function LabPracticalsPage() {
             <div className="bg-emerald-950/20 border border-emerald-800/50 rounded-xl p-4 space-y-2 animate-in fade-in">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-brand-emerald">
-                  ✓ Examiner Score: {vivaScore.marks} / {vivaScore.max} Marks
+                  {vivaScore.marks > 0 ? "✓" : "✗"} Examiner Score: {vivaScore.marks} / {vivaScore.max} Marks
                 </span>
                 <span className="text-[10px] text-emerald-400 font-semibold">Rubric Evaluated</span>
               </div>

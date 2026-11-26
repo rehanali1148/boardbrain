@@ -103,6 +103,11 @@ export default function TeacherClassBadgeWallPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
+      {data?.is_sample && (
+        <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-700/60 text-xs text-amber-200">
+          Sample class list: these names are examples until BoardBrain is connected to the school&apos;s student records.
+        </div>
+      )}
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#10192D] via-[#1E293B] to-[#0B1120] border border-slate-800 p-5 md:p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -128,7 +133,7 @@ export default function TeacherClassBadgeWallPage() {
             <div>
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Active Class Roster</p>
               <p className="text-base font-extrabold text-white">
-                {data?.total_students || 0} Students Recognized
+                {data?.students?.filter((s) => s.badge_count > 0).length || 0} of {data?.total_students || 0} Students Recognized
               </p>
             </div>
           </div>
@@ -147,17 +152,17 @@ export default function TeacherClassBadgeWallPage() {
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                10-A (Biology)
+                10-A ({user?.subject || "Physics"})
               </button>
               <button
-                onClick={() => { setClassGrade(9); setSection("B"); }}
+                onClick={() => { setClassGrade(10); setSection("B"); }}
                 className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                  classGrade === 9 && section === "B"
+                  classGrade === 10 && section === "B"
                     ? "bg-brand-emerald text-slate-950 shadow-sm"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                9-B (Computer Science)
+                10-B ({user?.subject || "Physics"})
               </button>
             </div>
           </div>
@@ -262,7 +267,7 @@ export default function TeacherClassBadgeWallPage() {
                   Honors Earned ({student.badge_count})
                 </span>
                 <span className="text-[10px] text-brand-emerald font-semibold">
-                  {student.badge_count >= 5 ? "🏆 Class Champion" : "✨ High Achiever"}
+                  {student.badge_count >= 5 ? "🏆 Class Champion" : student.badge_count > 0 ? "✨ High Achiever" : ""}
                 </span>
               </div>
 

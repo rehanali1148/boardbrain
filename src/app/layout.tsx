@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/authContext";
 import RoleSwitcherBar from "@/components/navigation/RoleSwitcherBar";
 import DesktopSidebar from "@/components/navigation/DesktopSidebar";
 import MobileDock from "@/components/navigation/MobileDock";
+import RoleGuard from "@/components/navigation/RoleGuard";
 
 export const metadata: Metadata = {
   title: "BoardBrain | Your Board Exam AI Guru - BSEK & AKU-EB",
@@ -36,7 +37,7 @@ export default function RootLayout({
             <div className="flex flex-1 w-full max-w-7xl mx-auto">
               <DesktopSidebar />
               <main className="flex-1 w-full min-w-0 pb-20 md:pb-8 p-4 md:p-6 overflow-x-hidden">
-                {children}
+                <RoleGuard>{children}</RoleGuard>
               </main>
             </div>
             <MobileDock />

@@ -159,7 +159,7 @@ export default function DualCardsPage() {
             <span>"Samjho in Roman Urdu → Write in Board English" Dual Study Cards</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Master the concept in natural Roman Urdu first, then write the exact board-ready English answer with e-marking keywords.
+            Master the concept in natural Roman Urdu first, then write the exact board-ready English answer with the keywords examiners look for.
           </p>
         </div>
 
@@ -206,7 +206,7 @@ export default function DualCardsPage() {
           </button>
         ))}
         <span className="text-xs text-slate-500 ml-auto font-mono">
-          Showing {filteredCards.length} verified study cards for Class {selectedGrade}
+          Showing {filteredCards.length} study cards for Class {selectedGrade}
         </span>
       </div>
 
@@ -287,7 +287,7 @@ export default function DualCardsPage() {
                       <div className="flex items-center justify-between text-xs font-bold text-brand-emerald uppercase tracking-wide">
                         <div className="flex items-center gap-2">
                           <CheckCheck className="w-4 h-4 text-brand-emerald" />
-                          <span>Official Board Answer Format:</span>
+                          <span>Board-style answer:</span>
                         </div>
                         <span className="text-[11px] text-slate-400 font-normal">Full 100% Mark Allocation</span>
                       </div>
@@ -299,7 +299,7 @@ export default function DualCardsPage() {
                       {/* E-Marking Keywords Pill Rack */}
                       <div className="space-y-1.5 pt-2">
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                          Board Examiner Must-See Keywords (E-Marking Tags):
+                          Keywords examiners look for:
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {card.e_marking_keywords.map((kw, i) => (

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-import { getStudentProgress } from "@/lib/api";
+import { getStudentProgress, getStudentGoldNotes, getStudentBadges } from "@/lib/api";
 import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 import {
   Flame,
@@ -74,7 +74,24 @@ export default function StudentHomePage() {
     load();
   }, [user]);
 
-  const examDaysLeft = 78;
+  // Expected start of the BSEK / AKU-EB Matric annual exams. Update when the board publishes the date sheet.
+  const EXPECTED_EXAM_START = new Date("2027-04-01T00:00:00+05:00");
+  const examDaysLeft = Math.max(0, Math.ceil((EXPECTED_EXAM_START.getTime() - Date.now()) / 86400000));
+
+  const [goldNotes, setGoldNotes] = useState<any[]>([]);
+  useEffect(() => {
+    if (!user?.class_grade) return;
+    getStudentGoldNotes(user.class_grade).then(setGoldNotes);
+  }, [user?.class_grade]);
+
+  // Same number the Awards page shows
+  const [earnedBadges, setEarnedBadges] = useState<number | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    getStudentBadges()
+      .then((b) => setEarnedBadges(b.unlocked_count))
+      .catch(() => setEarnedBadges(0));
+  }, [user]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -124,13 +141,32 @@ export default function StudentHomePage() {
               <div>
                 <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Board Exam</p>
                 <p className="text-sm font-bold text-slate-100">{examDaysLeft} Days Left</p>
+                <p className="text-[9px] text-slate-500">expected 1 April 2027</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 40% Pass + A-1 Shield Readiness Cards */}
+      {goldNotes.length > 0 && (
+        <div className="bg-[#10192D] border border-amber-700/50 rounded-2xl p-4 space-y-3">
+          <h3 className="text-sm font-bold text-brand-amber flex items-center gap-2">
+            <Award className="w-4 h-4" />
+            <span>Tips from your teachers</span>
+          </h3>
+          {goldNotes.slice(0, 3).map((n: any) => (
+            <div key={n.id} className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl text-xs space-y-1">
+              <p className="font-bold text-slate-200">
+                {n.subject} • {n.topic}
+              </p>
+              <p className="text-slate-300">{n.gold_tip_text}</p>
+              <p className="text-[10px] text-slate-500">— {n.teacher_name}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pass + A-1 Readiness Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Theory Readiness Card */}
         <div className="bg-[#10192D] border border-slate-800 rounded-xl p-4 shadow-sm relative overflow-hidden">
@@ -142,7 +178,7 @@ export default function StudentHomePage() {
               </div>
               <h3 className="text-2xl font-black text-slate-100">{progress?.theory_readiness_pct || 74}%</h3>
               <p className="text-xs text-slate-400">
-                <span className="text-brand-emerald font-semibold">✓ 33% Official Pass Threshold Secured.</span> Working toward 80%+ A-1 Shield.
+                <span className="text-brand-emerald font-semibold">✓ Above the 33% pass mark.</span> Working toward 80%+ A-1 Shield.
               </p>
             </div>
             <div className="w-12 h-12 rounded-full border-4 border-brand-emerald flex items-center justify-center text-xs font-bold text-brand-emerald bg-brand-emerald/10">
@@ -193,7 +229,7 @@ export default function StudentHomePage() {
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-white tracking-tight">Trophy Room &amp; Honors</h4>
               <span className="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30">
-                6 Earned
+                {earnedBadges === null ? "…" : `${earnedBadges} Earned`}
               </span>
             </div>
             <p className="text-xs text-slate-400">

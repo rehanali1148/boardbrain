@@ -284,7 +284,7 @@ export default function NumericalsPage() {
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <FileCheck2 className="w-5 h-5 text-brand-emerald" />
-                  <span className="text-sm font-bold text-slate-100">Official Examiner Score Breakdown</span>
+                  <span className="text-sm font-bold text-slate-100">Score Breakdown</span>
                 </div>
                 <div className="text-right">
                   <span className="text-xl font-black text-brand-amber">

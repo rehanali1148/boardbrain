@@ -1,5 +1,5 @@
 // Verified Board Curriculum Data Engine for BoardBrain
-// Comprehensive Sindh (BSEK) & Federal (FBISE) Board questions for Class 9 & Class 10
+// Comprehensive Sindh (BSEK) & AKU-EB Board questions for Class 9 & Class 10
 
 export interface QuestionItem {
   question_id: string;
@@ -392,8 +392,8 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     subject: "Physics",
     chapter_name: "Geometrical Optics",
     section: "SECTION_A",
-    text_en: "The focal length of a convex mirror according to standard sign convention is always:",
-    text_ur: "معیاری سائن کنونشن کے مطابق محدب آئینے (Convex Mirror) کا فوکل لینتھ ہمیشہ ہوتا ہے:",
+    text_en: "Using the real-is-positive sign convention of the textbook (1/f = 1/p + 1/q), the focal length of a convex mirror is taken as:",
+    text_ur: "درسی کتاب کے حقیقی-مثبت سائن کنونشن (1/f = 1/p + 1/q) کے مطابق محدب آئینے (Convex Mirror) کا فوکل لینتھ لیا جاتا ہے:",
     options_json: JSON.stringify({
       A: "Positive",
       B: "Negative",
@@ -406,7 +406,7 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     formula_used: "1/f = 1/p + 1/q",
     solution_rubric: "The focus of a convex mirror lies behind the reflecting surface (virtual focus), hence f is taken as negative.",
     cognitive_level: "Knowledge",
-    trap_note: "Convex lens has POSITIVE focus, but Convex mirror has NEGATIVE focus!"
+    trap_note: "Under the real-is-positive convention a convex lens has a POSITIVE focal length but a convex mirror has a NEGATIVE one (virtual focus)."
   },
   {
     question_id: "PHY10-CURR-001",
@@ -1086,7 +1086,7 @@ export function queryAiGuruKnowledge(question: string): {
   // 14. Student Tool: Paper Presentation Blueprint
   if (q.includes("presentation") || q.includes("paper") || q.includes("heading") || q.includes("marker") || q.includes("topper")) {
     return {
-      headline: "✍️ BSEK & FBISE Board Topper Presentation Blueprint",
+      headline: "✍️ BSEK & AKU-EB Board Topper Presentation Blueprint",
       explanation: "Examiner ke pass sirf 2 minute hotay hain aik copy check karne ke liye. Presentation se 10 se 15 marks ka farq parta hai:\n• Blue Cut Marker (Broad): Q. No aur Main Headings ke liye.\n• Cut Marker (Medium): Sub-headings (Definition, Principle, Unit, Working) ke liye.\n• Blue Ballpoint / Gel Pen: Body text aur theory ke liye (Red/Green pen sakhti se mamnoo hai!).\n• Space Rule: Har 2 short questions ke darmiyan 2 lines ka gap aur aik neat pencil line draw karein.\n• Calculation Margin: Page ki right side par 1 inch margin draw kar ke 'Rough Work' likhein.",
       formula: "Topper Golden Rule: Neat copy = Examiner ka mood khush = Full marks!",
       unit: "Presentation adds +10% to final aggregate",
@@ -1099,7 +1099,7 @@ export function queryAiGuruKnowledge(question: string): {
   return {
     headline: `Board Topic Guidance: "${question}"`,
     explanation: `Yeh specific topic filhal hamaray verified Class 9 & 10 syllabus database mein authenticate nahi hua. BoardBrain ghalat ya unverified maloomat faraham nahi karta taake aap ke marks ka risk na ho.\n\nAap is sawal ko direct apne subject teacher (Sir Farhan Ahmed) ko forward kar saktay hain taake woh aap ko verified board answer guide karein.`,
-    formula: "Verified Scope: BSEK Karachi & FBISE Matric Curricula",
+    formula: "Scope: BSEK Karachi & AKU-EB Matric Curricula",
     unit: "Status: Unverified / Needs Teacher Verification",
     stepTip: "Neechay 'Ask Sir Farhan' (Escalate Doubt) par click karein taake yeh doubt direct Saddar campus faculty inbox mein submit ho jaye.",
     challengeQuestion: "Kya aap is sawal ko Physics, Chemistry ya Biology ke kisi specific chapter ya numerical value ke sath pooch saktay hain?"
