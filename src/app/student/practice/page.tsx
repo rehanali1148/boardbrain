@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/authContext";
-import { getChapters, getQuestions, submitBlitz, getMistakeVault } from "@/lib/api";
-import { FALLBACK_CHAPTERS } from "@/lib/curriculumData";
+import { getChapters, getQuestions, submitBlitz, getMistakeVault, clearMistakeVaultItem } from "@/lib/api";
+import { FALLBACK_CHAPTERS, FALLBACK_QUESTIONS } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import NastaliqText from "@/components/urdu/NastaliqText";
 import {
@@ -17,7 +17,11 @@ import {
   BookOpen,
   HelpCircle,
   Flame,
-  Award
+  Award,
+  ShieldAlert,
+  Trash2,
+  ArrowRight,
+  ChevronDown
 } from "lucide-react";
 
 export default function PracticeBlitzPage() {
@@ -32,7 +36,33 @@ export default function PracticeBlitzPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // Load chapters when Subject or User changes
+  // 5-Minute Timer State (300 seconds)
+  const [timeLeft, setTimeLeft] = useState<number>(300);
+  const [timerActive, setTimerActive] = useState<boolean>(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize Timer
+  useEffect(() => {
+    if (timerActive && timeLeft > 0 && !blitzResult) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && !blitzResult && questions.length > 0) {
+      // Auto submit on time expiry
+      handleSubmitBlitz();
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [timeLeft, timerActive, blitzResult, questions.length]);
+
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Load chapters and initial Mistake Vault
   useEffect(() => {
     async function initChapters() {
       setLoading(true);
@@ -65,6 +95,8 @@ export default function PracticeBlitzPage() {
       setLoading(true);
       setUserAnswers({});
       setBlitzResult(null);
+      setTimeLeft(300); // Reset timer to 5:00
+      setTimerActive(true);
       try {
         const boardKey = user?.board === "AKU-EB" ? "AKUEB" : "BSEK_KARACHI";
         const grade = user?.class_grade || 10;
@@ -86,8 +118,10 @@ export default function PracticeBlitzPage() {
   };
 
   const handleSubmitBlitz = async () => {
-    if (questions.length === 0) return;
+    if (questions.length === 0 || submitting) return;
     setSubmitting(true);
+    setTimerActive(false);
+
     const answersPayload = questions.map((q) => ({
       question_id: q.question_id,
       selected_option: userAnswers[q.question_id] || "NONE",
@@ -96,10 +130,18 @@ export default function PracticeBlitzPage() {
     try {
       const res = await submitBlitz(selectedSubject, selectedChapter, answersPayload);
       setBlitzResult(res);
+
+      // Save to client storage for dynamic dashboard sync
+      try {
+        const pct = res.score_percentage ?? res.percentage ?? 0;
+        localStorage.setItem("boardbrain_last_score_pct", String(pct));
+        localStorage.setItem("boardbrain_last_subject", selectedSubject);
+      } catch (err) {}
+
       const vData = await getMistakeVault();
       setVaultItems(vData);
     } catch (e) {
-      console.warn("Submission fallback used");
+      console.warn("Submission error:", e);
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +150,32 @@ export default function PracticeBlitzPage() {
   const handleReset = () => {
     setUserAnswers({});
     setBlitzResult(null);
+    setTimeLeft(300);
+    setTimerActive(true);
   };
+
+  const handleClearVaultItem = async (qid: string) => {
+    await clearMistakeVaultItem(qid);
+    setVaultItems((prev) => prev.filter((item) => item.question_id !== qid));
+  };
+
+  // Compute accurate question count per chapter from actual question store
+  const getChapterQuestionCount = (chName: string) => {
+    const grade = user?.class_grade || 10;
+    const subLower = selectedSubject.toLowerCase();
+    const matches = FALLBACK_QUESTIONS.filter(
+      (q) =>
+        q.grade === grade &&
+        q.subject.toLowerCase() === subLower &&
+        (q.chapter_name.toLowerCase().includes(chName.toLowerCase()) ||
+          chName.toLowerCase().includes(q.chapter_name.toLowerCase()))
+    );
+    return matches.length > 0 ? matches.length : 12;
+  };
+
+  const scorePct = blitzResult?.score_percentage ?? blitzResult?.percentage ?? 0;
+  const correctCount = blitzResult?.correct_answers ?? blitzResult?.score ?? 0;
+  const totalCount = blitzResult?.total_questions ?? blitzResult?.total ?? questions.length;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -124,28 +191,44 @@ export default function PracticeBlitzPage() {
           </p>
         </div>
 
-        {/* Subject Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-[#10192D] p-1 rounded-xl border border-slate-800">
-          {(["Physics", "Chemistry", "Biology"] as const).map((sub) => (
-            <button
-              key={sub}
-              onClick={() => {
-                setSelectedSubject(sub);
-                const grade = user?.class_grade || 10;
-                const defaultChs = FALLBACK_CHAPTERS[`${sub}_${grade}`] || FALLBACK_CHAPTERS[`${sub}_10`] || [];
-                if (defaultChs.length > 0) {
-                  setSelectedChapter(defaultChs[0].chapter_name);
-                }
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                selectedSubject === sub
-                  ? "bg-brand-emerald text-slate-950 shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              {sub}
-            </button>
-          ))}
+        {/* 5-Minute Active Countdown Timer */}
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all shadow-sm ${
+              blitzResult
+                ? "bg-slate-900 border-slate-700 text-slate-400"
+                : timeLeft < 60
+                ? "bg-rose-950/80 border-rose-500/80 text-rose-300 animate-pulse"
+                : "bg-emerald-950/60 border-emerald-500/50 text-emerald-300"
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>{blitzResult ? "Blitz Completed" : `Time: ${formatTimer(timeLeft)}`}</span>
+          </div>
+
+          {/* Subject Filter Pills */}
+          <div className="flex items-center gap-1.5 bg-[#10192D] p-1 rounded-xl border border-slate-800">
+            {(["Physics", "Chemistry", "Biology"] as const).map((sub) => (
+              <button
+                key={sub}
+                onClick={() => {
+                  setSelectedSubject(sub);
+                  const grade = user?.class_grade || 10;
+                  const defaultChs = FALLBACK_CHAPTERS[`${sub}_${grade}`] || FALLBACK_CHAPTERS[`${sub}_10`] || [];
+                  if (defaultChs.length > 0) {
+                    setSelectedChapter(defaultChs[0].chapter_name);
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  selectedSubject === sub
+                    ? "bg-brand-emerald text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -160,11 +243,14 @@ export default function PracticeBlitzPage() {
           onChange={(e) => setSelectedChapter(e.target.value)}
           className="bg-[#10192D] border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 outline-none focus:border-brand-emerald flex-1 sm:max-w-md"
         >
-          {chapters.map((ch) => (
-            <option key={ch.chapter_name} value={ch.chapter_name}>
-              {ch.chapter_name} ({ch.question_count || 12} Qs)
-            </option>
-          ))}
+          {chapters.map((ch) => {
+            const count = getChapterQuestionCount(ch.chapter_name);
+            return (
+              <option key={ch.chapter_name} value={ch.chapter_name}>
+                {ch.chapter_name} ({count} Board Qs)
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -227,7 +313,7 @@ export default function PracticeBlitzPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   {Object.entries(opts).map(([key, optText]) => {
                     const isSelected = selectedOpt === key;
-                    const isCorrectAnswer = resultItem && resultItem.correct_option === key;
+                    const isCorrectAnswer = resultItem && (resultItem.correct_option === key || resultItem.correct_option?.toUpperCase() === key.toUpperCase());
                     const isWrongAnswer = resultItem && isSelected && !resultItem.is_correct;
 
                     let btnClass = "bg-slate-900 border-slate-700 hover:border-slate-500 text-slate-200";
@@ -285,12 +371,12 @@ export default function PracticeBlitzPage() {
                       ) : (
                         <>
                           <AlertCircle className="w-4 h-4 text-amber-400" />
-                          <span>Examiner Trap Alert:</span>
+                          <span>Examiner Trap Alert (Saved to Mistake Vault):</span>
                         </>
                       )}
                     </div>
                     <p className="text-[11px] leading-relaxed">
-                      {resultItem.examiner_feedback || q.solution_rubric}
+                      {resultItem.examiner_feedback || resultItem.examiner_trap || q.solution_rubric}
                     </p>
                     {q.formula_used && (
                       <div className="font-mono text-[10px] text-slate-400 pt-1">
@@ -322,7 +408,7 @@ export default function PracticeBlitzPage() {
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Retry Blitz</span>
+                <span>Retry Blitz Drill</span>
               </button>
             ) : (
               <button
@@ -333,7 +419,7 @@ export default function PracticeBlitzPage() {
                 {submitting ? (
                   <>
                     <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Grading Paper...</span>
+                    <span>Grading Paper Against BSEK Rubric...</span>
                   </>
                 ) : (
                   <>
@@ -347,30 +433,136 @@ export default function PracticeBlitzPage() {
         </div>
       )}
 
-      {/* Score Summary Modal Banner */}
+      {/* Realistic BSEK Score Summary Modal Banner */}
       {blitzResult && (
-        <div className="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+        <div
+          className={`p-5 rounded-2xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+            scorePct >= 80
+              ? "bg-gradient-to-r from-emerald-950/80 to-slate-900 border-emerald-500/40"
+              : scorePct >= 60
+              ? "bg-gradient-to-r from-sky-950/80 to-slate-900 border-sky-500/40"
+              : scorePct >= 33
+              ? "bg-gradient-to-r from-amber-950/80 to-slate-900 border-amber-500/40"
+              : "bg-gradient-to-r from-rose-950/80 to-slate-900 border-rose-500/40"
+          }`}
+        >
           <div className="space-y-1">
-            <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">
+            <span
+              className={`text-xs font-bold uppercase tracking-wider ${
+                scorePct >= 80
+                  ? "text-emerald-400"
+                  : scorePct >= 60
+                  ? "text-sky-400"
+                  : scorePct >= 33
+                  ? "text-amber-400"
+                  : "text-rose-400"
+              }`}
+            >
               Official Blitz Score
             </span>
             <div className="text-2xl font-black text-white">
-              {blitzResult.correct_answers} / {blitzResult.total_questions}{" "}
+              {correctCount} / {totalCount}{" "}
               <span className="text-base font-normal text-slate-400">
-                ({blitzResult.score_percentage}%)
+                ({scorePct}%)
               </span>
             </div>
             <p className="text-xs text-slate-300">
-              {blitzResult.score_percentage >= 80
+              {scorePct >= 80
                 ? "🌟 Outstanding! A-1 Shield Readiness level achieved on this chapter."
-                : "💡 Good effort! Review missed questions saved to your Mistake Vault below."}
+                : scorePct >= 60
+                ? "👍 Solid Performance! Grade A / B Level. Review minor examiner traps."
+                : scorePct >= 33
+                ? "⚠️ Passing Benchmark Secured (Above 33% BSEK Pass Mark). Review mistakes below to reach A-1."
+                : "🚨 Below 33% Official BSEK Pass Threshold. Review fundamentals in Dual Study Cards before retrying."}
             </p>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-            <Award className="w-8 h-8 text-emerald-400" />
+          <div
+            className={`w-14 h-14 rounded-2xl border flex items-center justify-center shrink-0 ${
+              scorePct >= 80
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                : scorePct >= 60
+                ? "bg-sky-500/10 border-sky-500/30 text-sky-400"
+                : scorePct >= 33
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+            }`}
+          >
+            {scorePct >= 80 ? (
+              <Award className="w-8 h-8" />
+            ) : scorePct >= 33 ? (
+              <CheckCircle2 className="w-8 h-8" />
+            ) : (
+              <ShieldAlert className="w-8 h-8" />
+            )}
           </div>
         </div>
       )}
+
+      {/* Spaced-Repetition Mistake Vault Section */}
+      <div className="bg-[#10192D] border border-slate-800 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2">
+            <Flame className="w-5 h-5 text-brand-amber" />
+            <h3 className="text-sm font-bold text-white">
+              Spaced-Repetition Mistake Vault ({vaultItems.length} Saved)
+            </h3>
+          </div>
+          <span className="text-[11px] text-slate-400">
+            Re-tests incorrect concepts after 48-hour consolidation cycle
+          </span>
+        </div>
+
+        {vaultItems.length === 0 ? (
+          <div className="p-6 text-center text-slate-400 text-xs bg-slate-900/60 rounded-xl border border-slate-800">
+            ✓ Your Mistake Vault is clear! Incorrect answers from any blitz drill automatically appear here.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {vaultItems.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row sm:items-start justify-between gap-3"
+              >
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/60 border border-amber-700/60 text-amber-300 uppercase">
+                      {item.subject} • {item.chapter_name}
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      {item.hours_left === 0 ? (
+                        <span className="text-emerald-400 font-bold">⚡ Ready to Re-Test</span>
+                      ) : (
+                        `⏳ Re-test in ${item.hours_left || 48}h`
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-200">
+                    {item.text_en}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    <span className="text-rose-400 font-medium">Your answer: {item.user_answer}</span> •{" "}
+                    <span className="text-emerald-400 font-medium">Correct: {item.correct_option}</span>
+                  </p>
+                  <p className="text-[11px] text-amber-300/90 bg-amber-950/30 p-2 rounded-lg border border-amber-900/40">
+                    {item.examiner_trap}
+                  </p>
+                </div>
+
+                <div className="flex sm:flex-col items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleClearVaultItem(item.question_id)}
+                    className="p-2 rounded-lg bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 transition-colors text-xs flex items-center gap-1.5"
+                    title="Mark Resolved"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="sm:hidden">Resolve</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

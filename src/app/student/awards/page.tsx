@@ -54,6 +54,10 @@ export default function StudentAwardsPage() {
   }
 
   const badges = data?.badges || [];
+  const unlockedCount = data?.unlocked_count ?? badges.filter((b) => b.is_unlocked === 1).length;
+  const totalBadges = data?.total_badges ?? (badges.length || 5);
+  const totalXp = data?.total_xp ?? 450;
+  const tierCounts = data?.tier_counts ?? { platinum: 1, gold: 1, silver: 1, bronze: 0 };
 
   const filteredBadges = badges.filter((b) => {
     if (selectedFilter === "all") return true;
@@ -138,7 +142,7 @@ export default function StudentAwardsPage() {
               <div className="w-10 h-10 rounded-full bg-amber-500/20 text-brand-amber mx-auto flex items-center justify-center font-extrabold mb-1">
                 <Medal className="w-5 h-5" />
               </div>
-              <p className="text-lg font-black text-white">{data?.unlocked_count} / {data?.total_badges}</p>
+              <p className="text-lg font-black text-white">{unlockedCount} / {totalBadges}</p>
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Badges Earned</p>
             </div>
 
@@ -146,7 +150,7 @@ export default function StudentAwardsPage() {
               <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-brand-emerald mx-auto flex items-center justify-center font-extrabold mb-1">
                 <Zap className="w-5 h-5" />
               </div>
-              <p className="text-lg font-black text-brand-emerald">{data?.total_xp} XP</p>
+              <p className="text-lg font-black text-brand-emerald">{totalXp} XP</p>
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Total XP Earned</p>
             </div>
           </div>
@@ -156,16 +160,16 @@ export default function StudentAwardsPage() {
         <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-3 text-xs">
           <span className="text-slate-400 font-medium">Your Collection:</span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-950/50 border border-cyan-500/30 text-cyan-300 font-semibold">
-            💎 {data?.tier_counts.platinum} Platinum
+            💎 {tierCounts.platinum} Platinum
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-950/50 border border-amber-500/30 text-amber-300 font-semibold">
-            🥇 {data?.tier_counts.gold} Gold
+            🥇 {tierCounts.gold} Gold
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-200 font-semibold">
-            🥈 {data?.tier_counts.silver} Silver
+            🥈 {tierCounts.silver} Silver
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-950/50 border border-orange-500/30 text-orange-300 font-semibold">
-            🥉 {data?.tier_counts.bronze} Bronze
+            🥉 {tierCounts.bronze} Bronze
           </span>
         </div>
       </div>
@@ -174,8 +178,8 @@ export default function StudentAwardsPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none text-xs">
         {[
           { id: "all", label: `All (${badges.length})` },
-          { id: "unlocked", label: `Unlocked (${data?.unlocked_count})` },
-          { id: "locked", label: `In Progress (${(data?.total_badges || 0) - (data?.unlocked_count || 0)})` },
+          { id: "unlocked", label: `Unlocked (${unlockedCount})` },
+          { id: "locked", label: `In Progress (${Math.max(0, totalBadges - unlockedCount)})` },
           { id: "blitz", label: "MCQs & Blitz" },
           { id: "numericals", label: "Numericals & Steps" },
           { id: "labs", label: "15-Mark Labs" },

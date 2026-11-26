@@ -77,39 +77,77 @@ export default function LabPracticalsPage() {
     return () => clearInterval(interval);
   }, [timerActive, timerSeconds]);
 
-  // Biology Spotting Deck
-  const SPOTTING_DECK = [
-    {
-      spot: "Spot A (Slide)",
-      title: "Binary Fission in Amoeba",
-      image_desc: "Microscopic slide showing an elongated Amoeba cell with central constriction in the cytoplasm and nucleus dividing into two daughter nuclei.",
-      identifying_reasons: [
-        "1. Constriction is visible in the middle of the single-celled body (cytokinesis).",
-        "2. The nucleus is dividing amitotically into two equal parts (karyokinesis).",
-      ],
-      board_marks: "2 Marks",
-    },
-    {
-      spot: "Spot B (Slide)",
-      title: "Mitosis in Onion Root Tip (Metaphase)",
-      image_desc: "Microscopic view of plant cells with dark stained chromosomes clearly arranged along the equatorial plane (metaphase plate) of the cell.",
-      identifying_reasons: [
-        "1. Highly condensed chromosomes are aligned at the equator of the spindle.",
-        "2. Spindle fibers are attached to the centromeres of each chromosome.",
-      ],
-      board_marks: "2 Marks",
-    },
-    {
-      spot: "Spot C (Model / Specimen)",
-      title: "Longitudinal Section of Mammalian Kidney",
-      image_desc: "Anatomical bean-shaped organ model showing outer dark cortex, inner lighter medulla with renal pyramids, and the renal pelvis leading to the ureter.",
-      identifying_reasons: [
-        "1. Outer granular cortex containing Malpighian corpuscles (Bowman's capsules).",
-        "2. Inner striated medullary pyramids opening into the renal pelvis.",
-      ],
-      board_marks: "2 Marks",
-    },
-  ];
+  // Multi-Subject Spotting Decks
+  const SPOTTING_DECKS: Record<string, any[]> = {
+    Physics: [
+      {
+        spot: "Station A (Apparatus)",
+        title: "Vernier Caliper & Least Count",
+        image_desc: "Metallic slide caliper with main scale in mm and vernier scale of 10 divisions.",
+        identifying_reasons: [
+          "1. Least Count = 1 MSD - 1 VSD = 0.01 cm (or 0.1 mm).",
+          "2. Used to measure internal/external diameter and depth of cylinder."
+        ],
+        board_marks: "2 Marks"
+      },
+      {
+        spot: "Station B (Optical Component)",
+        title: "Triangular Glass Prism",
+        image_desc: "Equilateral transparent glass prism with 3 rectangular faces and 2 triangular bases.",
+        identifying_reasons: [
+          "1. Angle of prism A = 60°.",
+          "2. Used to verify angle of minimum deviation (Dm) and refraction of light."
+        ],
+        board_marks: "2 Marks"
+      }
+    ],
+    Chemistry: [
+      {
+        spot: "Station A (Laboratory Glassware)",
+        title: "Graduated Burette (50 cm³)",
+        image_desc: "Long graduated glass tube with stopcock at bottom for delivering accurate reagent volumes.",
+        identifying_reasons: [
+          "1. Calibrated in 0.1 cm³ divisions from 0 at top to 50 at bottom.",
+          "2. Used in volumetric titration for acid-base neutralization."
+        ],
+        board_marks: "2 Marks"
+      },
+      {
+        spot: "Station B (Heating Apparatus)",
+        title: "Bunsen Burner & Non-Luminous Flame",
+        image_desc: "Metallic burner with air collar at base producing steady blue cone flame.",
+        identifying_reasons: [
+          "1. Air holes open produces oxidizing non-luminous flame (no soot).",
+          "2. Used for flame tests (e.g. Sodium golden yellow, Calcium brick red)."
+        ],
+        board_marks: "2 Marks"
+      }
+    ],
+    Biology: [
+      {
+        spot: "Spot A (Slide)",
+        title: "Binary Fission in Amoeba",
+        image_desc: "Microscopic slide showing an elongated Amoeba cell with central constriction in the cytoplasm and nucleus dividing into two daughter nuclei.",
+        identifying_reasons: [
+          "1. Constriction is visible in the middle of the single-celled body (cytokinesis).",
+          "2. The nucleus is dividing amitotically into two equal parts (karyokinesis)."
+        ],
+        board_marks: "2 Marks"
+      },
+      {
+        spot: "Spot B (Slide)",
+        title: "Mitosis in Onion Root Tip (Metaphase)",
+        image_desc: "Microscopic view of plant cells with dark stained chromosomes clearly arranged along the equatorial plane (metaphase plate) of the cell.",
+        identifying_reasons: [
+          "1. Highly condensed chromosomes are aligned at the equator of the spindle.",
+          "2. Spindle fibers are attached to the centromeres of each chromosome."
+        ],
+        board_marks: "2 Marks"
+      }
+    ]
+  };
+
+  const currentDeck = SPOTTING_DECKS[selectedSubject] || SPOTTING_DECKS.Physics;
 
   // Real Speech-to-Text via Web Speech API (No fake hardcoded answer)
   const handleStartRecording = () => {
@@ -211,24 +249,29 @@ export default function LabPracticalsPage() {
       }
     });
 
-    const overlapRatio = keyOfficialWords.length > 0 ? matchCount / keyOfficialWords.length : 0.5;
+    const overlapRatio = keyOfficialWords.length > 0 ? matchCount / keyOfficialWords.length : 0.0;
 
-    let marksAwarded = 2.5;
-    if (overlapRatio >= 0.35 || (studentWords.length >= 8 && overlapRatio >= 0.3)) {
+    let marksAwarded = 0.0;
+    let feedback = "";
+
+    if (matchCount === 0 || overlapRatio < 0.15) {
+      marksAwarded = 0.0;
+      feedback = "❌ 0 / 4 Marks Awarded. The spoken or typed response does not contain the required scientific terms or principles for this board viva question. Please review the model answer key below.";
+    } else if (overlapRatio >= 0.35 || (studentWords.length >= 8 && overlapRatio >= 0.3)) {
       marksAwarded = 4.0;
-    } else if (overlapRatio >= 0.2 || studentWords.length >= 5) {
-      marksAwarded = 3.5;
-    } else if (studentWords.length >= 3) {
-      marksAwarded = 3.0;
+      feedback = "✓ Outstanding! Full 4.0 / 4.0 Marks. Complete scientific accuracy matching the board examiner marking rubric.";
+    } else if (overlapRatio >= 0.25) {
+      marksAwarded = 2.5;
+      feedback = "⚠️ Partial Credit: 2.5 / 4.0 Marks. Key terms were identified, but essential physical conditions or explanations were omitted.";
+    } else {
+      marksAwarded = 1.0;
+      feedback = "⚠️ Incomplete Attempt: 1.0 / 4.0 Marks. The answer only touched upon peripheral points without addressing the core mechanism.";
     }
 
     setVivaScore({
       marks: marksAwarded,
       max: 4.0,
-      feedback:
-        marksAwarded >= 3.5
-          ? `✓ Outstanding! 100% Viva Cleared. Full scientific accuracy matching official board examiner answer key.`
-          : `⚠️ Good attempt! For full 4/4 marks in board viva, make sure to state all key technical parameters.`,
+      feedback: feedback,
     });
   };
 
@@ -415,7 +458,7 @@ export default function LabPracticalsPage() {
               </div>
               <p className="text-xs text-emerald-300 leading-relaxed">{vivaScore.feedback}</p>
               <div className="pt-2 text-[11px] text-slate-400 border-t border-slate-800">
-                <b className="text-slate-300">Official Board Answer Key:</b>{" "}
+                <b className="text-slate-300">Model Board Rubric Answer:</b>{" "}
                 {currentQuestion?.a}
               </div>
             </div>
@@ -451,7 +494,7 @@ export default function LabPracticalsPage() {
                 Microscope & Specimen Spotting Station
               </span>
               <h3 className="text-base font-bold text-white mt-0.5">
-                {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].spot}
+                {currentDeck[spottingIdx % currentDeck.length].spot}
               </h3>
             </div>
 
@@ -480,7 +523,7 @@ export default function LabPracticalsPage() {
           <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
             <div className="text-xs text-slate-400 font-semibold uppercase">Microscope Field of View:</div>
             <p className="text-sm md:text-base text-slate-200 italic leading-relaxed">
-              &quot;{SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].image_desc}&quot;
+              &quot;{currentDeck[spottingIdx % currentDeck.length].image_desc}&quot;
             </p>
           </div>
 
@@ -497,13 +540,13 @@ export default function LabPracticalsPage() {
               <div className="bg-emerald-950/20 border border-emerald-800/50 rounded-xl p-4 space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-brand-emerald">
-                    Identified: {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].title}
+                    Identified: {currentDeck[spottingIdx % currentDeck.length].title}
                   </span>
                   <span className="text-[10px] text-emerald-400 font-semibold">2.0 Marks</span>
                 </div>
                 <div className="space-y-1 text-xs text-slate-300">
                   <p className="font-semibold text-slate-400">Board Identifying Characteristics:</p>
-                  {SPOTTING_DECK[spottingIdx % SPOTTING_DECK.length].identifying_reasons.map((r, i) => (
+                  {currentDeck[spottingIdx % currentDeck.length].identifying_reasons.map((r: string, i: number) => (
                     <p key={i}>{r}</p>
                   ))}
                 </div>
@@ -514,7 +557,7 @@ export default function LabPracticalsPage() {
           <div className="flex justify-end pt-2">
             <button
               onClick={() => {
-                setSpottingIdx((prev) => (prev + 1) % SPOTTING_DECK.length);
+                setSpottingIdx((prev) => (prev + 1) % currentDeck.length);
                 setShowSpottingAnswer(false);
                 setTimerSeconds(60);
                 setTimerActive(false);
@@ -533,16 +576,26 @@ export default function LabPracticalsPage() {
         <div className="bg-[#10192D] border border-slate-800 rounded-2xl p-5 space-y-5">
           <div className="border-b border-slate-800 pb-3">
             <span className="text-[10px] font-bold text-brand-amber uppercase tracking-wider">
-              8-Mark Concordant Observation Table Auditor
+              {selectedSubject} Observation Table Auditor (8 Marks)
             </span>
             <h3 className="text-base font-bold text-white mt-0.5">
-              Volumetric Titration Reading Verification (Burette cm³)
+              {selectedSubject === "Physics"
+                ? "Ohm's Law Verification Readings (Voltmeter V vs Ammeter I)"
+                : selectedSubject === "Biology"
+                ? "Biochemical Specimen Reaction Table (Observation & Inference)"
+                : "Volumetric Titration Reading Verification (Burette cm³)"}
             </h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-slate-400 font-medium">Burette Reading 1 (Rough):</label>
+              <label className="text-xs text-slate-400 font-medium">
+                {selectedSubject === "Physics"
+                  ? "Trial 1 (V / I => R1 in Ω):"
+                  : selectedSubject === "Biology"
+                  ? "Sample A (Control):"
+                  : "Burette Reading 1 (Rough):"}
+              </label>
               <input
                 type="text"
                 value={titrationR1}
@@ -551,7 +604,13 @@ export default function LabPracticalsPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium">Burette Reading 2:</label>
+              <label className="text-xs text-slate-400 font-medium">
+                {selectedSubject === "Physics"
+                  ? "Trial 2 (V / I => R2 in Ω):"
+                  : selectedSubject === "Biology"
+                  ? "Sample B (Enzyme Active):"
+                  : "Burette Reading 2 (Exact):"}
+              </label>
               <input
                 type="text"
                 value={titrationR2}
@@ -560,7 +619,13 @@ export default function LabPracticalsPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium">Burette Reading 3:</label>
+              <label className="text-xs text-slate-400 font-medium">
+                {selectedSubject === "Physics"
+                  ? "Trial 3 (V / I => R3 in Ω):"
+                  : selectedSubject === "Biology"
+                  ? "Sample C (Denatured):"
+                  : "Burette Reading 3 (Exact):"}
+              </label>
               <input
                 type="text"
                 value={titrationR3}
@@ -574,7 +639,11 @@ export default function LabPracticalsPage() {
             onClick={handleAuditTable}
             className="px-5 py-2.5 rounded-xl bg-brand-amber text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors"
           >
-            Validate Concordance (Examiner Rule ≤ 0.1 ml)
+            {selectedSubject === "Physics"
+              ? "Validate Concordance (Ohm's Law R2 vs R3 ≤ 0.1 Ω)"
+              : selectedSubject === "Biology"
+              ? "Validate Concordance (Biochemical Reaction Observations)"
+              : "Validate Concordance (Titration Rule ≤ 0.1 ml)"}
           </button>
 
           {tableValidation && (

@@ -289,6 +289,75 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     cognitive_level: "Application",
     trap_note: "Do not multiply! Divide velocity change by time."
   },
+  {
+    question_id: "PHY09-DYN-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Physics",
+    chapter_name: "Dynamics",
+    section: "SECTION_A",
+    text_en: "According to Newton's Second Law of Motion, the force F required to produce an acceleration 'a' in a mass 'm' is given by:",
+    text_ur: "نیوٹن کے حرکت کے دوسرے قانون کے مطابق ماس 'm' میں ایکسلریشن 'a' پیدا کرنے والی قوت کا فارمولا ہے:",
+    options_json: JSON.stringify({
+      A: "F = m / a",
+      B: "F = m × a",
+      C: "F = a / m",
+      D: "F = 1/2 m a²"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: true,
+    formula_used: "F = m * a (1 N = 1 kg·m/s²)",
+    solution_rubric: "Newton's second law states F = ma. 1 Newton is the force producing an acceleration of 1 m/s² in a mass of 1 kg.",
+    cognitive_level: "Knowledge",
+    trap_note: "Momentum is p = mv; Force is F = ma."
+  },
+  {
+    question_id: "PHY09-GRAV-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Physics",
+    chapter_name: "Gravitation",
+    section: "SECTION_A",
+    text_en: "The numerical value of the Universal Gravitational Constant (G) is:",
+    text_ur: "گریویٹیشنل کونسٹنٹ (G) کی عددی قیمت کیا ہے؟",
+    options_json: JSON.stringify({
+      A: "6.673 × 10⁻¹¹ N m²/kg²",
+      B: "9.8 m/s²",
+      C: "6.4 × 10⁶ m",
+      D: "6.0 × 10²⁴ kg"
+    }),
+    correct_option: "A",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "F = G * (m₁ * m₂) / r²",
+    solution_rubric: "G = 6.673 × 10⁻¹¹ N m²/kg². 9.8 is acceleration due to gravity (g), and 6.0 × 10²⁴ kg is the mass of Earth.",
+    cognitive_level: "Knowledge",
+    trap_note: "Do not confuse G with g! g is 9.8 m/s²; G is 6.673 × 10⁻¹¹ N m²/kg²."
+  },
+  {
+    question_id: "PHY09-WRK-001",
+    board: "BSEK_KARACHI",
+    grade: 9,
+    subject: "Physics",
+    chapter_name: "Work & Energy",
+    section: "SECTION_A",
+    text_en: "The kinetic energy of an object of mass 'm' moving with velocity 'v' is:",
+    text_ur: "ویلاسٹی 'v' سے حرکت کرتے ہوئے ماس 'm' والے جسم کی کائنیٹک انرجی کیا ہوگی؟",
+    options_json: JSON.stringify({
+      A: "m v",
+      B: "m g h",
+      C: "1/2 m v²",
+      D: "1/2 m² v"
+    }),
+    correct_option: "C",
+    marks: 1,
+    is_numerical: true,
+    formula_used: "K.E. = 1/2 m v²",
+    solution_rubric: "Kinetic energy is the energy possessed by a body due to its motion, given by K.E. = 1/2 m v².",
+    cognitive_level: "Knowledge",
+    trap_note: "mgh is Potential Energy; 1/2 mv² is Kinetic Energy."
+  },
 
   // =========================================================================
   // CLASS 10 PHYSICS
@@ -362,6 +431,120 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     cognitive_level: "Application",
     trap_note: "Students mistakenly add 6 + 3 = 9 (which is Series, not Parallel!)."
   },
+  {
+    question_id: "PHY10-ELEC-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Physics",
+    chapter_name: "Electrostatics",
+    section: "SECTION_A",
+    text_en: "According to Coulomb's Law, if the distance between two point charges is halved, the electrostatic force between them will:",
+    text_ur: "کولم کے قانون کے مطابق اگر دو چارجز کے درمیان فاصلہ آدھا کر دیا جائے تو ان کے درمیان برقی قوت:",
+    options_json: JSON.stringify({
+      A: "Be halved",
+      B: "Double",
+      C: "Increase by 4 times",
+      D: "Decrease by 4 times"
+    }),
+    correct_option: "C",
+    marks: 1,
+    is_numerical: true,
+    formula_used: "F = k * (q₁ * q₂) / r²",
+    solution_rubric: "Coulomb force is inversely proportional to square of separation: F ∝ 1/r². When r is halved (r/2), force becomes 1/(1/2)² = 4 times.",
+    cognitive_level: "Understanding",
+    trap_note: "Examiner Trap: Remember inverse-square dependence. Halving distance quadruples the force!"
+  },
+  {
+    question_id: "PHY10-ELEC-002",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Physics",
+    chapter_name: "Electrostatics",
+    section: "SECTION_A",
+    text_en: "The SI unit of electric capacitance of a capacitor is:",
+    text_ur: "کیپیسیٹر کی الیکٹرک کیپیسیٹنس کا بنیادی ایس آئی (SI) یونٹ کیا ہے؟",
+    options_json: JSON.stringify({
+      A: "Coulomb",
+      B: "Farad",
+      C: "Volt",
+      D: "Ohm"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "C = Q / V (Farad = Coulomb / Volt)",
+    solution_rubric: "Capacitance C = Q/V is measured in Farads (F). 1 Farad = 1 Coulomb per Volt.",
+    cognitive_level: "Knowledge",
+    trap_note: "Coulomb is charge; Farad is capacitance!"
+  },
+  {
+    question_id: "PHY10-SND-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Physics",
+    chapter_name: "Sound",
+    section: "SECTION_A",
+    text_en: "The audible frequency range for a normal healthy human ear is approximately:",
+    text_ur: "عام صحت مند انسانی کان کے سننے کی فریکوئنسی کی حد کتنی ہوتی ہے؟",
+    options_json: JSON.stringify({
+      A: "2 Hz to 2,000 Hz",
+      B: "20 Hz to 20,000 Hz (20 kHz)",
+      C: "200 Hz to 200,000 Hz",
+      D: "10 Hz to 10,000 Hz"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Audible sound range for humans is 20 Hz to 20,000 Hz (20 kHz). Frequencies above 20 kHz are ultrasound; below 20 Hz are infrasound.",
+    cognitive_level: "Knowledge",
+    trap_note: "Do not confuse 20 Hz with 200 Hz. Remember 20 Hz to 20,000 Hz."
+  },
+  {
+    question_id: "PHY10-EM-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Physics",
+    chapter_name: "Electromagnetism",
+    section: "SECTION_A",
+    text_en: "In a step-up transformer, which of the following relationships is always true?",
+    text_ur: "اسٹیپ اپ ٹرانسفارمر میں مندرجہ ذیل میں سے کون سا تعلق ہمیشہ درست ہوتا ہے؟",
+    options_json: JSON.stringify({
+      A: "Ns < Np and Vs < Vp",
+      B: "Ns > Np and Vs > Vp",
+      C: "Ns = Np",
+      D: "Vs < Vp and Is < Ip"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "Vs / Vp = Ns / Np",
+    solution_rubric: "A step-up transformer increases voltage, meaning secondary turns Ns exceed primary turns Np (Ns > Np) and Vs > Vp.",
+    cognitive_level: "Understanding",
+    trap_note: "Step-up increases Voltage but decreases Current!"
+  },
+  {
+    question_id: "PHY10-NUC-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Physics",
+    chapter_name: "Atomic & Nuclear Physics",
+    section: "SECTION_A",
+    text_en: "An alpha (α) particle emitted during radioactive decay is identical to:",
+    text_ur: "ریڈیو ایکٹیو تنزل کے دوران خارج ہونے والا الفا پارٹیکل کس کے برابر ہوتا ہے؟",
+    options_json: JSON.stringify({
+      A: "Fast moving electron",
+      B: "Helium nucleus (2 protons + 2 neutrons)",
+      C: "High energy photon",
+      D: "Single neutron"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    formula_used: "He (charge +2e, mass 4 amu)",
+    solution_rubric: "Alpha particle is a doubly-ionized helium nucleus containing 2 protons and 2 neutrons (4_2 He).",
+    cognitive_level: "Knowledge",
+    trap_note: "Beta is fast electron; Alpha is Helium nucleus."
+  },
 
   // =========================================================================
   // CLASS 10 CHEMISTRY
@@ -412,6 +595,50 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     cognitive_level: "Knowledge",
     trap_note: "pH scale: 0-3 strong acid, 7 neutral, 11-14 strong base."
   },
+  {
+    question_id: "CHM10-ORG-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Chemistry",
+    chapter_name: "Organic Chemistry",
+    section: "SECTION_A",
+    text_en: "The functional group characteristic of Carboxylic Acids is:",
+    text_ur: "کاربوکسلک ایسڈز کی شناخت کون سا فنکشنل گروپ ہے؟",
+    options_json: JSON.stringify({
+      A: "-OH (Hydroxyl)",
+      B: "-CHO (Aldehyde)",
+      C: "-COOH (Carboxyl)",
+      D: "-CO- (Ketone)"
+    }),
+    correct_option: "C",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Carboxylic acids contain the -COOH functional group (a carbonyl and a hydroxyl group combined).",
+    cognitive_level: "Knowledge",
+    trap_note: "-OH is alcohol; -COOH is carboxylic acid."
+  },
+  {
+    question_id: "CHM10-HYD-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Chemistry",
+    chapter_name: "Hydrocarbons",
+    section: "SECTION_A",
+    text_en: "The general formula for Alkenes (unsaturated hydrocarbons with double bond) is:",
+    text_ur: "الکینز (وہ ہائیڈرو کاربنز جن میں ڈبل بانڈ ہو) کا عمومی فارمولا کیا ہے؟",
+    options_json: JSON.stringify({
+      A: "CnH2n+2",
+      B: "CnH2n",
+      C: "CnH2n-2",
+      D: "CnH2n-6"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Alkanes are CnH2n+2, Alkenes are CnH2n, and Alkynes are CnH2n-2.",
+    cognitive_level: "Knowledge",
+    trap_note: "Alkanes +2, Alkenes no offset (2n), Alkynes -2."
+  },
 
   // =========================================================================
   // CLASS 10 BIOLOGY
@@ -438,6 +665,72 @@ export const FALLBACK_QUESTIONS: QuestionItem[] = [
     solution_rubric: "Alveoli are microscopic air sacs surrounded by dense capillary networks where O₂ and CO₂ diffuse across moist single-layered epithelium.",
     cognitive_level: "Knowledge",
     trap_note: "Bronchioles only conduct air; actual exchange occurs solely in alveoli."
+  },
+  {
+    question_id: "BIO10-HOM-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Biology",
+    chapter_name: "Homeostasis",
+    section: "SECTION_A",
+    text_en: "The structural and functional filtration unit of the human kidney is called:",
+    text_ur: "انسانی گردے کی فلٹریشن کی بنیادی اور فعلیاتی اکائی کہلاتی ہے:",
+    options_json: JSON.stringify({
+      A: "Neuron",
+      B: "Nephron",
+      C: "Glomerulus capsule",
+      D: "Loop of Henle"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Nephron is the complete functional unit consisting of Bowman's capsule, glomerulus, and tubules that filters blood and produces urine.",
+    cognitive_level: "Knowledge",
+    trap_note: "Examiner Trap: Neuron is for brain/nerves; Nephron is for kidney!"
+  },
+  {
+    question_id: "BIO10-CRD-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Biology",
+    chapter_name: "Coordination and Control",
+    section: "SECTION_A",
+    text_en: "Endocrine glands secrete chemical messengers called hormones directly into:",
+    text_ur: "اینڈوکرائن غدود اپنے کیمیائی پیغامات (ہارمونز) براہ راست کہاں خارج کرتے ہیں؟",
+    options_json: JSON.stringify({
+      A: "Ducts into digestive tract",
+      B: "Lymph fluid only",
+      C: "Bloodstream directly",
+      D: "Salivary cavities"
+    }),
+    correct_option: "C",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Endocrine glands are ductless glands that release their secretions (hormones) directly into the blood circulation.",
+    cognitive_level: "Understanding",
+    trap_note: "Exocrine glands have ducts; Endocrine glands are ductless and secrete into blood."
+  },
+  {
+    question_id: "BIO10-REP-001",
+    board: "BSEK_KARACHI",
+    grade: 10,
+    subject: "Biology",
+    chapter_name: "Reproduction",
+    section: "SECTION_A",
+    text_en: "Binary fission in unicellular organisms like Amoeba is a form of:",
+    text_ur: "امیبا جیسے یک خلوی جانداروں میں بائنری فشن کس قسم کی تولید ہے؟",
+    options_json: JSON.stringify({
+      A: "Sexual reproduction",
+      B: "Asexual reproduction",
+      C: "Parthenogenesis",
+      D: "Conjugation"
+    }),
+    correct_option: "B",
+    marks: 1,
+    is_numerical: false,
+    solution_rubric: "Binary fission produces two genetically identical daughter organisms from a single parent without gamete fusion (asexual reproduction).",
+    cognitive_level: "Knowledge",
+    trap_note: "Binary fission does NOT involve meiosis or gametes; it is asexual."
   }
 ];
 
@@ -646,6 +939,18 @@ export function queryAiGuruKnowledge(question: string): {
     };
   }
 
+  // 4b. Snell's Law & Refraction of Light
+  if (q.includes("snell") || q.includes("refraction") || q.includes("refractive index") || q.includes("critical angle")) {
+    return {
+      headline: "🔍 Laws of Refraction & Snell's Law (Optics)",
+      explanation: "Board exams require stating BOTH laws of refraction for full marks:\n1. 1st Law (Coplanar Law): The incident ray, refracted ray, and the normal at the point of incidence all lie in the SAME PLANE.\n2. 2nd Law (Snell's Law): The ratio of the sine of angle of incidence (i) to the sine of angle of refraction (r) is constant for a given pair of media: sin(i) / sin(r) = n.",
+      formula: "n = sin(i) / sin(r)  |  Critical Angle: sin(c) = 1 / n",
+      unit: "Refractive index 'n' is a pure ratio of speeds/sines and has NO UNITS",
+      stepTip: "Examiner Trap: 50% of students lose 1.5 marks by writing only Snell's formula and omitting the 'Same Plane' first law! Always write both laws.",
+      challengeQuestion: "Agar light hawa se glass (n = 1.5) mein dakhil ho, to is ki speed par kya farq paray ga?"
+    };
+  }
+
   // 5. Ohm's Law & Electricity
   if (q.includes("ohm") || q.includes("current") || q.includes("voltage") || q.includes("resistance")) {
     return {
@@ -682,8 +987,8 @@ export function queryAiGuruKnowledge(question: string): {
     };
   }
 
-  // 8. Acids, Bases & pH
-  if (q.includes("acid") || q.includes("base") || q.includes("ph") || q.includes("titration") || q.includes("salt")) {
+  // 8. Acids, Bases & pH (Strict word boundary for pH)
+  if (q.includes("acid") || q.includes("base") || /\bph\b/i.test(q) || q.includes("titration") || q.includes("alkali")) {
     return {
       headline: "Acids, Bases & pH Calculations",
       explanation: "According to Arrhenius: Acids produce H⁺ ions in water; Bases produce OH⁻ ions. Bronsted-Lowry: Acids donate protons (H⁺); Bases accept protons. Lewis: Acids accept electron pairs; Bases donate electron pairs.",
@@ -694,15 +999,39 @@ export function queryAiGuruKnowledge(question: string): {
     };
   }
 
-  // 9. Biology: Cells, Mitosis & Respiration
-  if (q.includes("cell") || q.includes("mitosis") || q.includes("meiosis") || q.includes("respiration") || q.includes("biology") || q.includes("organ") || q.includes("heart")) {
+  // 9a. Mitosis vs Meiosis Board 5-Mark Comparison
+  if (q.includes("mitosis") || q.includes("meiosis") || q.includes("cell division")) {
     return {
-      headline: "Biology Core Concepts & Examination Keys",
-      explanation: "Mitosis produces 2 identical diploid daughter cells for growth and repair (Prophase, Metaphase, Anaphase, Telophase). Meiosis produces 4 haploid gamete cells with genetic variation (crossing over in Prophase I).",
-      formula: "Cellular Respiration: C₆H₁₂O₆ + 6O₂ ➔ 6CO₂ + 6H₂O + 36/38 ATP",
-      unit: "Energy currency of cell = ATP (Adenosine Triphosphate)",
-      stepTip: "In Board Biology exams, always draw a neat pencil diagram with right-aligned labels to guarantee full marks in 4-mark short questions!",
-      challengeQuestion: "Mitosis ki kis stage mein chromosomes cell ke center (equatorial plate) par line banatay hain?"
+      headline: "🧬 Mitosis vs Meiosis Board 5-Mark Comparison Table",
+      explanation: "Official BSEK & AKU-EB 5-mark comparison criteria:\n• Occurrence: Mitosis in Somatic (body) cells; Meiosis in Germ (reproductive) cells.\n• Number of Divisions: Mitosis has 1 division; Meiosis has 2 successive divisions (Meiosis I & II).\n• Daughter Cells: Mitosis produces 2 identical diploid (2n) cells; Meiosis produces 4 genetically varied haploid (1n) cells.\n• Crossing Over: Absent in Mitosis; Present in Meiosis (Prophase I) creating variation.\n• Function: Mitosis is for growth and tissue repair; Meiosis is for gamete formation.",
+      formula: "Mitosis: 2n ➔ 2 × 2n  |  Meiosis: 2n ➔ 4 × 1n",
+      unit: "Chromosome number: Diploid (2n = 46 in humans) vs Haploid (n = 23)",
+      stepTip: "Always draw a neat 2-column comparison table with blue marker headings to secure full 5/5 marks.",
+      challengeQuestion: "Human beings mein sperm aur egg cells mein kitne chromosomes hotay hain (23 ya 46)?"
+    };
+  }
+
+  // 9b. Cellular Respiration & Bioenergetics
+  if (q.includes("respiration") || q.includes("photosynthesis") || q.includes("atp") || q.includes("glycolysis")) {
+    return {
+      headline: "🌿 Cellular Respiration & Bioenergetics",
+      explanation: "Cellular respiration is the oxidation of food molecules (glucose) to release energy in the form of ATP:\n• Aerobic Respiration: In presence of O₂, yields 36 to 38 ATP per glucose molecule.\n• Anaerobic Respiration (Fermentation): In absence of O₂, yields only 2 ATP with Lactic Acid (in muscle cramps) or Ethanol + CO₂ (in yeast).",
+      formula: "Aerobic: C₆H₁₂O₆ + 6O₂ ➔ 6CO₂ + 6H₂O + 36/38 ATP",
+      unit: "ATP (Adenosine Triphosphate) = Energy currency of living cells",
+      stepTip: "Differentiate clearly between breathing (mechanical physical exchange) and respiration (biochemical oxidation inside mitochondria).",
+      challengeQuestion: "Muscle fatigue aur dard ke waqt muscles mein kaun sa acid banta hai?"
+    };
+  }
+
+  // 9c. Past Paper Trends (e.g. "2023 mein Physics mein kya aaya tha?")
+  if (q.includes("2023") || q.includes("2022") || q.includes("2024") || q.includes("past paper") || q.includes("pichlay saal")) {
+    return {
+      headline: "📋 BSEK 2023-2024 Past Paper Board Trends",
+      explanation: "BSEK 2023 Annual Examination Analysis for Class 10 Physics:\n• Section B: Critical angle & Total internal reflection (Q2), Simple pendulum mass independence proof (Q3), Parallel resistors calculation (Q4).\n• Section C: Concave mirror numerical (Object at 12 cm, f = 8 cm) for 8 Marks, and Boyle's Law / SHM derivation for 7 Marks.\n• Trend Insight: Mirrors numerical aur Simple Harmonic Motion har saal alternate papers mein repeat hotay hain.",
+      formula: "Exam Pattern: Section A (20% MCQs) + Section B (40% Short Qs) + Section C (40% Long/Numericals)",
+      unit: "Total Time: 3 Hours, Total Marks: 60",
+      stepTip: "Practice Blitz tab par jaa kar 2023 aur 2024 ke verified MCQs test karein.",
+      challengeQuestion: "Kya aap 2023 paper ka Section C numerical abhi solve karna chahtay hain?"
     };
   }
 
@@ -711,9 +1040,9 @@ export function queryAiGuruKnowledge(question: string): {
     return {
       headline: "🎯 BSEK 15-Year Target Paper & High-Yield Blueprint",
       explanation: "Struggling students ke liye 15 saal ke past papers ka verified analysis: Har saal Section B & C mein 70% questions in 5 topics se aatay hain:\n1. Physics 10: Simple Harmonic Motion derivation & Ohm's Law graphical proof.\n2. Physics 9: 2nd & 3rd Equations of Motion & Newton's 2nd Law (F = ma).\n3. Chemistry 10: Law of Mass Action & Dynamic Equilibrium Kc derivation.\n4. Chemistry 9: Bohr's Atomic Model & Ionic vs Covalent bonding.\n5. Biology: Mitosis stages diagram & Nephron working.",
-      formula: "Rule of 80/20: Pehle ye 5 topics pakkay karein, 50%+ passing marks guaranteed secure ho jate hain!",
+      formula: "Rule of 80/20: Pehle ye 5 high-yield topics tayyar karein taake concepts mazboot hon aur 33% passing benchmark ba-aasani cross ho.",
       unit: "Weightage: Section B (40 Marks) + Section C (20 Marks)",
-      stepTip: "Examiner Tip: Target questions ko hamesha 605 Blue Cut Marker ki headings ke sath likhein taake examiner pehle nazar mein full marks de.",
+      stepTip: "Examiner Tip: High-yield questions ko hamesha Blue Cut Marker ki headings ke sath likhein taake presentation saaf aur pur-asar ho.",
       challengeQuestion: "Aap pehle kis subject (Physics, Chemistry ya Biology) ka Target Paper unlock karna chahtay hain?"
     };
   }
@@ -749,7 +1078,7 @@ export function queryAiGuruKnowledge(question: string): {
       explanation: "Students 2 safhay likhtay hain phir bhi marks kat jatay hain! Examiner in 4 galtiyon par marks kaat-ta hai:\n1. Missing SI Unit in Final Answer: -0.5 Mark seedha deduct hota hai!\n2. Direct Calculation without 'Given Data' heading: -1.0 Mark cut!\n3. Vector quantities (Force, Velocity) par direction na likhna: -0.5 Mark cut!\n4. Diagram mein label dono taraf phailana: -1.0 Mark (Board rule: Labels sirf RIGHT side par pencil se align karein).",
       formula: "Full Marks Formula: Heading (Blue) + Definition + Formula + Diagram/Units",
       unit: "Zero Careless Mistakes = 100% Score",
-      stepTip: "Final answer ke gird hamesha 605 marker se Box banayein aur unit bold likhein (e.g. [ Ans = 24 cm ]).",
+      stepTip: "Final answer ke gird hamesha Cut Marker se Box banayein aur unit bold likhein (e.g. [ Ans = 24 cm ]).",
       challengeQuestion: "Kya aap apne Kisi numerical ya practical answer ka Red-Pen Audit karwana chahtay hain?"
     };
   }
@@ -758,7 +1087,7 @@ export function queryAiGuruKnowledge(question: string): {
   if (q.includes("presentation") || q.includes("paper") || q.includes("heading") || q.includes("marker") || q.includes("topper")) {
     return {
       headline: "✍️ BSEK & FBISE Board Topper Presentation Blueprint",
-      explanation: "Examiner ke pass sirf 2 minute hotay hain aik copy check karne ke liye. Presentation se 10 se 15 marks ka farq parta hai:\n• 605 Blue Cut Marker: Q. No aur Main Headings ke liye.\n• 604 Marker: Sub-headings (Definition, Principle, Unit, Working) ke liye.\n• Blue Ballpoint / Gel Pen: Body text aur theory ke liye (Red/Green pen sakhti se mamnoo hai!).\n• Space Rule: Har 2 short questions ke darmiyan 2 lines ka gap aur aik neat pencil line draw karein.\n• Calculation Margin: Page ki right side par 1 inch margin draw kar ke 'Rough Work' likhein.",
+      explanation: "Examiner ke pass sirf 2 minute hotay hain aik copy check karne ke liye. Presentation se 10 se 15 marks ka farq parta hai:\n• Blue Cut Marker (Broad): Q. No aur Main Headings ke liye.\n• Cut Marker (Medium): Sub-headings (Definition, Principle, Unit, Working) ke liye.\n• Blue Ballpoint / Gel Pen: Body text aur theory ke liye (Red/Green pen sakhti se mamnoo hai!).\n• Space Rule: Har 2 short questions ke darmiyan 2 lines ka gap aur aik neat pencil line draw karein.\n• Calculation Margin: Page ki right side par 1 inch margin draw kar ke 'Rough Work' likhein.",
       formula: "Topper Golden Rule: Neat copy = Examiner ka mood khush = Full marks!",
       unit: "Presentation adds +10% to final aggregate",
       stepTip: "Overwriting aur cutting se bachein. Agar galti ho jaye to sirf aik single horizontal line se cut karein, ink se scribble na karein.",
@@ -766,13 +1095,13 @@ export function queryAiGuruKnowledge(question: string): {
     };
   }
 
-  // 15. General / Fallback Smart Guidance
+  // 15. Honest, Curriculum-Grounded Fallback (No hallucinated / mismatched cards)
   return {
-    headline: `Board Exam Guidance on: "${question}"`,
-    explanation: `Bohat acha sawal! Board examination standards ke mutabiq is topic mein 3 cheezein zaroori hain: (1) Standard Board Definition, (2) Relevant Scientific Formula ya Law, aur (3) SI Units / Labelled Diagram.`,
-    formula: "Always write: Given Data ➔ Formula ➔ Calculation ➔ Result with Units",
-    unit: "Standard Metric SI units are mandatory for full marks",
-    stepTip: "Examiner Tip: Numericals mein formula likhnay ka alag 1 mark hota hai, calculation ka 1.5 mark, aur SI unit na likhnay par 0.5 mark deduct ho jata hai.",
-    challengeQuestion: "Kya aap is sawal ka Given Data aur Required quantity alag alag pehchan saktay hain?"
+    headline: `Board Topic Guidance: "${question}"`,
+    explanation: `Yeh specific topic filhal hamaray verified Class 9 & 10 syllabus database mein authenticate nahi hua. BoardBrain ghalat ya unverified maloomat faraham nahi karta taake aap ke marks ka risk na ho.\n\nAap is sawal ko direct apne subject teacher (Sir Farhan Ahmed) ko forward kar saktay hain taake woh aap ko verified board answer guide karein.`,
+    formula: "Verified Scope: BSEK Karachi & FBISE Matric Curricula",
+    unit: "Status: Unverified / Needs Teacher Verification",
+    stepTip: "Neechay 'Ask Sir Farhan' (Escalate Doubt) par click karein taake yeh doubt direct Saddar campus faculty inbox mein submit ho jaye.",
+    challengeQuestion: "Kya aap is sawal ko Physics, Chemistry ya Biology ke kisi specific chapter ya numerical value ke sath pooch saktay hain?"
   };
 }

@@ -85,6 +85,37 @@ let liveDoubts: any[] = [
   }
 ];
 
+let liveMistakeVault: any[] = [
+  {
+    id: "MSTK-001",
+    question_id: "PHY10-SHM-001",
+    subject: "Physics",
+    grade: 10,
+    chapter_name: "Simple Harmonic Motion & Waves",
+    text_en: "If the mass of the bob of a simple pendulum is tripled, its time period will:",
+    user_answer: "Increase by 3 times",
+    correct_option: "Remain unchanged",
+    examiner_trap: "Examiner Trap: Students incorrectly think mass increases time period. Formula T = 2π√(L/g) has NO mass term!",
+    missed_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+    retry_available_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
+    hours_left: 12
+  },
+  {
+    id: "MSTK-002",
+    question_id: "PHY10-OPT-001",
+    subject: "Physics",
+    grade: 10,
+    chapter_name: "Geometrical Optics",
+    text_en: "The focal length of a convex mirror according to standard sign convention is always:",
+    user_answer: "Positive",
+    correct_option: "Negative",
+    examiner_trap: "Convex lens has POSITIVE focus, but Convex mirror has NEGATIVE focus behind reflecting surface!",
+    missed_at: new Date(Date.now() - 50 * 3600 * 1000).toISOString(),
+    retry_available_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+    hours_left: 0
+  }
+];
+
 export async function GET(req: NextRequest, { params }: { params: { slug: string[] } }) {
   const path = params.slug.join("/");
   const url = new URL(req.url);
@@ -128,11 +159,56 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   // 3. Radar
   if (path === "curriculum/radar") {
     return NextResponse.json([
-      { id: 1, chapter_name: "Geometrical Optics", question_summary: "Mirror Formula & Magnification Numericals", appearance_frequency: 9, probability_score: 95 },
-      { id: 2, chapter_name: "Simple Harmonic Motion", question_summary: "Time Period of Pendulum (Independence of Mass)", appearance_frequency: 8, probability_score: 90 },
-      { id: 3, chapter_name: "Current Electricity", question_summary: "Parallel vs Series Resistors Combination", appearance_frequency: 8, probability_score: 88 },
-      { id: 4, chapter_name: "Chemical Equilibrium", question_summary: "Le Chatelier's Principle & Kc Units", appearance_frequency: 9, probability_score: 92 },
-      { id: 5, chapter_name: "Gaseous Exchange", question_summary: "Alveoli adaptations & Anaerobic Lactic Acid", appearance_frequency: 7, probability_score: 85 },
+      {
+        id: 1,
+        chapter_name: "Geometrical Optics",
+        question_summary: "Mirror Formula & Magnification Numericals (1/f = 1/p + 1/q)",
+        urgency_tag: "High Yield • 95% Overdue",
+        probability_score: 95,
+        appearance_frequency: 9,
+        years_appeared: [2014, 2015, 2017, 2018, 2019, 2021, 2022, 2023, 2024],
+        examiner_insight: "Appeared in BSEK 2015, 2017, 2019, 2021, 2022, 2023 & 2024 annual papers. Alternate-year paper rotation confirms a 95% likelihood for 2026."
+      },
+      {
+        id: 2,
+        chapter_name: "Simple Harmonic Motion & Waves",
+        question_summary: "Time Period of Simple Pendulum (Independence of Bob Mass)",
+        urgency_tag: "Examiner Trap • 90% Probability",
+        probability_score: 90,
+        appearance_frequency: 8,
+        years_appeared: [2014, 2016, 2017, 2019, 2021, 2023],
+        examiner_insight: "Appeared 8 times over the last 10 examination cycles (2014, 2016, 2017, 2019, 2021, 2023). Focus on independence of mass T = 2π√(L/g)."
+      },
+      {
+        id: 3,
+        chapter_name: "Current Electricity",
+        question_summary: "Equivalent Resistance in Parallel vs Series Combinations",
+        urgency_tag: "Section C • 88% Frequency",
+        probability_score: 88,
+        appearance_frequency: 8,
+        years_appeared: [2015, 2016, 2018, 2020, 2022, 2024],
+        examiner_insight: "Appeared in 2015, 2016, 2018, 2020, 2022, and 2024 annual exams. Paper setter switches between 2-resistor parallel and 3-resistor series circuits."
+      },
+      {
+        id: 4,
+        chapter_name: "Chemical Equilibrium",
+        question_summary: "Le Chatelier's Principle & Kc Equilibrium Constant Units",
+        urgency_tag: "Core Chapter • 92% Frequency",
+        probability_score: 92,
+        appearance_frequency: 9,
+        years_appeared: [2014, 2016, 2017, 2018, 2021, 2022, 2023, 2024],
+        examiner_insight: "Appeared in 9 out of 10 board papers (2014, 2016, 2017, 2018, 2021, 2022, 2023, 2024). Mandatory 4-mark short question in Section B."
+      },
+      {
+        id: 5,
+        chapter_name: "Gaseous Exchange & Respiration",
+        question_summary: "Alveoli Adaptations & Human Breathing Mechanism",
+        urgency_tag: "Diagram & Viva • 85% Frequency",
+        probability_score: 85,
+        appearance_frequency: 7,
+        years_appeared: [2015, 2017, 2019, 2020, 2022, 2024],
+        examiner_insight: "Appeared in 2015, 2017, 2019, 2020, 2022, and 2024 board exams. High-yield for both theory Section B and 15-mark lab spotting."
+      }
     ]);
   }
 
@@ -164,6 +240,122 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
         { topic: "Ohm's Law Temperature Condition", fail_rate: "42%", error: "Omitting 'temperature must remain constant' condition" },
         { topic: "Simple Pendulum Mass Independence", fail_rate: "51%", error: "Assuming increasing bob mass changes the time period" }
       ]
+    });
+  }
+
+  // 8. Student Badges & Awards Suite
+  if (path === "student/badges") {
+    return NextResponse.json({
+      student_name: "Areeba Tariq",
+      erp_user_id: "NASRA-SAD-STD-10",
+      total_badges: 5,
+      unlocked_count: 3,
+      total_xp: 450,
+      tier_counts: { platinum: 1, gold: 1, silver: 1, bronze: 0 },
+      badges: [
+        {
+          slug: "blitz-master",
+          title: "MCQ Blitz Ace",
+          title_urdu: "ایم سی کیو چیمپئن",
+          category: "blitz",
+          tier: "gold",
+          icon: "Zap",
+          description: "Scored 100% on 3 consecutive 5-minute Section A board blitzes.",
+          criteria_text: "3 perfect blitz sessions",
+          xp_points: 150,
+          earned_at: "Yesterday",
+          endorsement_by: "Sir Farhan Ahmed",
+          endorsement_note: "Flawless conceptual speed on Sindh past papers.",
+          is_unlocked: 1
+        },
+        {
+          slug: "rubric-perfectionist",
+          title: "Topper Step Scholar",
+          title_urdu: "مارکنگ روبرک ماسٹر",
+          category: "numericals",
+          tier: "platinum",
+          icon: "Award",
+          description: "Achieved full 4/4 rubric marks on Section C numerical step builder.",
+          criteria_text: "Full Given Data + Formula + Working + Units",
+          xp_points: 200,
+          earned_at: "2 days ago",
+          endorsement_by: "Sir Farhan Ahmed",
+          endorsement_note: "Model presentation matching official board standards.",
+          is_unlocked: 1
+        },
+        {
+          slug: "viva-champion",
+          title: "Oral Viva Pro",
+          title_urdu: "ویوا وائس چیمپئن",
+          category: "labs",
+          tier: "silver",
+          icon: "Medal",
+          description: "Successfully cleared external examiner bench oral with full marks.",
+          criteria_text: "Score 4.0/4.0 on Lab Viva Simulator",
+          xp_points: 100,
+          earned_at: "3 days ago",
+          endorsement_by: null,
+          endorsement_note: null,
+          is_unlocked: 1
+        },
+        {
+          slug: "lab-virtuoso",
+          title: "Concordant Titration Auditor",
+          title_urdu: "پریکٹیکل لیب ماہر",
+          category: "labs",
+          tier: "bronze",
+          icon: "Star",
+          description: "Validated burette readings with concordancy under 0.1 cm³.",
+          criteria_text: "Audit 3 concordant table readings",
+          xp_points: 50,
+          earned_at: null,
+          endorsement_by: null,
+          endorsement_note: null,
+          is_unlocked: 0
+        },
+        {
+          slug: "streak-legend",
+          title: "7-Day Consistent Scholar",
+          title_urdu: "مستقل مزاج طالب علم",
+          category: "consistency",
+          tier: "gold",
+          icon: "Flame",
+          description: "Maintained active study streak for 7 consecutive days.",
+          criteria_text: "Complete 1 practice drill daily for 7 days",
+          xp_points: 150,
+          earned_at: null,
+          endorsement_by: null,
+          endorsement_note: null,
+          is_unlocked: 0
+        }
+      ]
+    });
+  }
+
+  // 9. Student Mistake Vault
+  if (path === "student/vault") {
+    return NextResponse.json(liveMistakeVault);
+  }
+
+  // 10. Student Progress Dashboard Metrics
+  if (path === "student/progress") {
+    const roleKey = url.searchParams.get("role_key") || "student_10";
+    const studentUser = roleKey.includes("09") ? USER_PROFILES.student_09 : USER_PROFILES.student_10;
+    return NextResponse.json({
+      student_name: studentUser.full_name,
+      class_grade: studentUser.class_grade,
+      board: studentUser.board,
+      campus: studentUser.campus,
+      theory_readiness_pct: studentUser.class_grade === 9 ? 72.0 : 76.5,
+      practical_readiness_pct: studentUser.class_grade === 9 ? 80.0 : 84.0,
+      streak_days: 5,
+      mistake_vault_pending_count: liveMistakeVault.length,
+      weak_chapters: studentUser.class_grade === 9
+        ? ["Dynamics", "Kinematics Equations"]
+        : ["Refraction of Light & Optical Instruments", "Current Electricity"],
+      predicted_grade_band: "A-1 (Shield Active)",
+      official_pass_mark_pct: 33,
+      pass_benchmark_met: true
     });
   }
 
@@ -412,7 +604,28 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     const results = answers.map((ans: any) => {
       const q = FALLBACK_QUESTIONS.find((item) => item.question_id === ans.question_id);
       const isCorrect = q ? ans.selected_option.toUpperCase() === q.correct_option.toUpperCase() : true;
-      if (isCorrect) score += 1;
+      if (isCorrect) {
+        score += 1;
+      } else if (q) {
+        const alreadyInVault = liveMistakeVault.some((m) => m.question_id === q.question_id);
+        if (!alreadyInVault) {
+          liveMistakeVault.push({
+            id: `MSTK-${Date.now().toString().slice(-4)}`,
+            question_id: q.question_id,
+            subject: q.subject,
+            grade: q.grade,
+            chapter_name: q.chapter_name,
+            text_en: q.text_en,
+            user_answer: ans.selected_option,
+            correct_option: q.correct_option,
+            examiner_trap: q.trap_note || "Remember to review fundamental definitions and formula units.",
+            missed_at: new Date().toISOString(),
+            retry_available_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+            hours_left: 48
+          });
+        }
+      }
+
       return {
         question_id: ans.question_id,
         text_en: q?.text_en || "Board Question",
@@ -420,7 +633,10 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
         correct_option: q?.correct_option || ans.selected_option,
         is_correct: isCorrect,
         solution_rubric: q?.solution_rubric || "Standard Board Solution",
-        examiner_trap: isCorrect ? null : "Examiner Trap: Remember to verify sign rules and fundamental SI units."
+        examiner_feedback: isCorrect
+          ? "✓ Perfect! Concept verified against official board marking scheme."
+          : `⚠️ Examiner Trap: ${q?.trap_note || "Remember to verify sign rules and fundamental SI units."}`,
+        examiner_trap: isCorrect ? null : (q?.trap_note || "Examiner Trap: Remember to verify sign rules and fundamental SI units.")
       };
     });
 
@@ -431,9 +647,44 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
       score,
       total,
       percentage: pct,
+      total_questions: total,
+      correct_answers: score,
+      score_percentage: pct,
       results,
-      vault_saved_count: total - score
+      vault_saved_count: liveMistakeVault.length
     });
+  }
+
+  // 4b. Clear Mistake Vault Item
+  if (path === "student/vault/clear") {
+    const qid = body.question_id;
+    if (qid) {
+      liveMistakeVault = liveMistakeVault.filter((m) => m.question_id !== qid);
+    } else {
+      liveMistakeVault = [];
+    }
+    return NextResponse.json({ status: "success", remaining_count: liveMistakeVault.length });
+  }
+
+  // 4c. Add to Mistake Vault Directly
+  if (path === "student/vault") {
+    if (body.question_id) {
+      liveMistakeVault.push({
+        id: `MSTK-${Date.now().toString().slice(-4)}`,
+        question_id: body.question_id,
+        subject: body.subject || "Physics",
+        grade: body.grade || 10,
+        chapter_name: body.chapter_name || "General",
+        text_en: body.text_en || "Practice Question",
+        user_answer: body.user_answer || "A",
+        correct_option: body.correct_option || "B",
+        examiner_trap: body.examiner_trap || "Examiner Trap Alert",
+        missed_at: new Date().toISOString(),
+        retry_available_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+        hours_left: 48
+      });
+    }
+    return NextResponse.json({ status: "success", vault_count: liveMistakeVault.length });
   }
 
   // 5. Escalate Doubt

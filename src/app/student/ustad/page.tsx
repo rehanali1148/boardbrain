@@ -47,7 +47,7 @@ export default function SocraticUstadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const STARTER_CHIPS = [
-    "🎯 Target Guess Paper (Guaranteed Passing)",
+    "🎯 High-Yield Practice Paper (80/20 Strategy)",
     "⚡ Formula Selector (Kinematics & Optics)",
     "💡 Ratta-Free Memory Tricks (Mnemonics)",
     "⚠️ Board Examiner Red-Pen Cut Points",
