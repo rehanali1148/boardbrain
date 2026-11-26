@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getBoardRadar } from "@/lib/api";
 import { useAuth } from "@/lib/authContext";
+import { getInsights } from "@/lib/learnerModel";
 import { Flame, Clock, CheckSquare, Sparkles, AlertCircle, Compass, Calendar, BookOpen } from "lucide-react";
 
 export default function BoardRadarPage() {
@@ -10,6 +11,11 @@ export default function BoardRadarPage() {
   const [selectedSubject, setSelectedSubject] = useState<"Physics" | "Chemistry" | "Biology">("Physics");
   const [radarItems, setRadarItems] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const [myChapters, setMyChapters] = useState<any[]>([]);
+  useEffect(() => {
+    setMyChapters(getInsights().chapters);
+  }, [user]);
 
   // 48-Hour Rescue Mode State
   const [rescueHours, setRescueHours] = useState<number>(6);
@@ -162,10 +168,10 @@ export default function BoardRadarPage() {
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
             <Flame className="w-5 h-5 text-brand-rose" />
-            <span>15-Year Historical Frequency & Weightage Radar</span>
+            <span>High-Yield Topic Radar</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Temporal gap analysis tracking Pakistani paper setter rotation cycles across 2014–2024 annual board papers.
+            The core topics of your syllabus that carry the most marks, with how you are doing on each. Past-paper years will appear here once real BSEK / AKU-EB papers are added.
           </p>
         </div>
 
@@ -192,58 +198,52 @@ export default function BoardRadarPage() {
         {loading ? (
           <div className="p-8 text-center text-slate-400 text-xs bg-[#10192D] border border-slate-800 rounded-2xl">
             <div className="w-8 h-8 border-2 border-brand-rose border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            Loading 15-Year Historical Frequency Data for {selectedSubject}...
+            Loading high-yield topics for {selectedSubject}...
           </div>
         ) : (
-          radarItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-[#10192D] border border-slate-800 p-4 md:p-5 rounded-2xl hover:border-slate-700 transition-all space-y-3"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-950/60 border border-rose-800/60 text-rose-300 uppercase tracking-wide">
-                  {item.urgency_tag || "High Frequency"}
-                </span>
-                <span className="text-xs font-bold text-brand-emerald">
-                  {item.probability_score}% Frequency Weightage
-                </span>
-              </div>
-
-              <h3 className="text-sm md:text-base font-bold text-white">
-                {item.chapter_name}: <span className="text-slate-300 font-normal">{item.question_summary}</span>
-              </h3>
-
-              {/* Past Paper Years Badges */}
-              {item.years_appeared && item.years_appeared.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
-                    <Calendar className="w-3.5 h-3.5 text-brand-amber" />
-                    <span>Appeared in BSEK Papers:</span>
+          radarItems.map((item) => {
+            const mine = myChapters.find((c: any) => c.subject === selectedSubject && c.chapter.toLowerCase() === String(item.chapter_name).toLowerCase());
+            const status = !mine || mine.attempts < 2
+              ? { label: "Not practised yet", cls: "bg-slate-800 border-slate-700 text-slate-300" }
+              : mine.state === "mastered"
+              ? { label: `Mastered (${mine.accuracy}%)`, cls: "bg-emerald-950/60 border-emerald-700 text-emerald-300" }
+              : mine.state === "misconception"
+              ? { label: `Wrong idea to fix (${mine.accuracy}%)`, cls: "bg-rose-950/60 border-rose-700 text-rose-300" }
+              : mine.state === "gap"
+              ? { label: `Not learnt yet (${mine.accuracy}%)`, cls: "bg-orange-950/60 border-orange-700 text-orange-300" }
+              : { label: `Shaky (${mine.accuracy}%)`, cls: "bg-amber-950/60 border-amber-700 text-amber-300" };
+            return (
+              <div key={item.id} className="bg-[#10192D] border border-slate-800 p-4 md:p-5 rounded-2xl hover:border-slate-700 transition-all space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-950/60 border border-rose-800/60 text-rose-300 uppercase tracking-wide">
+                    {item.question_types}
                   </span>
-                  {item.years_appeared.map((yr: number) => (
-                    <span
-                      key={yr}
-                      className="px-2 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-[11px] font-mono font-bold text-sky-300"
-                    >
-                      {yr}
-                    </span>
-                  ))}
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>You: {status.label}</span>
                 </div>
-              )}
-
-              {/* Board Paper History Insight */}
-              <div className="p-3 bg-slate-900/80 rounded-xl text-xs text-slate-300 space-y-1 border border-slate-800/80">
-                <p className="font-semibold text-brand-amber flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Board Paper History & Paper Setter Rotation:</span>
-                </p>
-                <p className="leading-relaxed">
-                  {item.examiner_insight ||
-                    `Appeared in ${item.appearance_frequency || 8} out of 10 annual examination cycles. High likelihood of recurrence.`}
-                </p>
+                <h3 className="text-sm md:text-base font-bold text-white">
+                  {item.chapter_name}: <span className="text-slate-300 font-normal">{item.question_summary}</span>
+                </h3>
+                {item.years_appeared && item.years_appeared.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
+                      <Calendar className="w-3.5 h-3.5 text-brand-amber" />
+                      <span>Appeared in board papers:</span>
+                    </span>
+                    {item.years_appeared.map((yr: number) => (
+                      <span key={yr} className="px-2 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-[11px] font-mono font-bold text-sky-300">{yr}</span>
+                    ))}
+                  </div>
+                )}
+                <div className="p-3 bg-slate-900/80 rounded-xl text-xs text-slate-300 space-y-1 border border-slate-800/80">
+                  <p className="font-semibold text-brand-amber flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Why it matters:</span>
+                  </p>
+                  <p className="leading-relaxed">{item.why}</p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

@@ -1038,8 +1038,8 @@ export function queryAiGuruKnowledge(question: string): {
   // 10. Student Tool: Board Target Paper / Guess Paper (High Yield)
   if (q.includes("target") || q.includes("guess") || q.includes("pass") || q.includes("pakka") || q.includes("important") || q.includes("repeat")) {
     return {
-      headline: "🎯 BSEK 15-Year Target Paper & High-Yield Blueprint",
-      explanation: "Struggling students ke liye 15 saal ke past papers ka verified analysis: Har saal Section B & C mein 70% questions in 5 topics se aatay hain:\n1. Physics 10: Simple Harmonic Motion derivation & Ohm's Law graphical proof.\n2. Physics 9: 2nd & 3rd Equations of Motion & Newton's 2nd Law (F = ma).\n3. Chemistry 10: Law of Mass Action & Dynamic Equilibrium Kc derivation.\n4. Chemistry 9: Bohr's Atomic Model & Ionic vs Covalent bonding.\n5. Biology: Mitosis stages diagram & Nephron working.",
+      headline: "🎯 High-Yield Topics Blueprint (80/20)",
+      explanation: "Struggling students ke liye syllabus ke sab se zyada marks wale topics. Pehle in par mehnat karein:\n1. Physics 10: Simple Harmonic Motion derivation & Ohm's Law graphical proof.\n2. Physics 9: 2nd & 3rd Equations of Motion & Newton's 2nd Law (F = ma).\n3. Chemistry 10: Law of Mass Action & Dynamic Equilibrium Kc derivation.\n4. Chemistry 9: Bohr's Atomic Model & Ionic vs Covalent bonding.\n5. Biology: Mitosis stages diagram & Nephron working.",
       formula: "Rule of 80/20: Pehle ye 5 high-yield topics tayyar karein taake concepts mazboot hon aur 33% passing benchmark ba-aasani cross ho.",
       unit: "Weightage: Section B (40 Marks) + Section C (20 Marks)",
       stepTip: "Examiner Tip: High-yield questions ko hamesha Blue Cut Marker ki headings ke sath likhein taake presentation saaf aur pur-asar ho.",

@@ -7,6 +7,7 @@ import {
   PracticalItem
 } from "./curriculumData";
 import { generateExamPaper } from "./examGenerator";
+import { radarFor } from "./radarTopics";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
@@ -141,61 +142,12 @@ export async function getQuestions(
 
 export async function getBoardRadar(board: string = "BSEK_KARACHI", grade: number = 10, subject: string = "Physics") {
   try {
-    return await fetchWithAuth(`/curriculum/radar?board=${board}&grade=${grade}&subject=${subject}`);
+    const data = await fetchWithAuth(`/curriculum/radar?board=${board}&grade=${grade}&subject=${subject}`);
+    if (Array.isArray(data)) return data;
   } catch (e) {
-    return [
-      {
-        id: 1,
-        chapter_name: "Geometrical Optics",
-        question_summary: "Mirror Formula & Magnification Numericals (1/f = 1/p + 1/q)",
-        urgency_tag: "High Yield • 95% Overdue",
-        probability_score: 95,
-        appearance_frequency: 9,
-        years_appeared: [2014, 2015, 2017, 2018, 2019, 2021, 2022, 2023, 2024],
-        examiner_insight: "Appeared in BSEK 2015, 2017, 2019, 2021, 2022, 2023 & 2024 annual papers. Alternate-year paper rotation confirms a 95% likelihood for 2026."
-      },
-      {
-        id: 2,
-        chapter_name: "Simple Harmonic Motion & Waves",
-        question_summary: "Time Period of Simple Pendulum (Independence of Bob Mass)",
-        urgency_tag: "Examiner Trap • 90% Probability",
-        probability_score: 90,
-        appearance_frequency: 8,
-        years_appeared: [2014, 2016, 2017, 2019, 2021, 2023],
-        examiner_insight: "Appeared 8 times over the last 10 examination cycles (2014, 2016, 2017, 2019, 2021, 2023). Focus on independence of mass T = 2π√(L/g)."
-      },
-      {
-        id: 3,
-        chapter_name: "Current Electricity",
-        question_summary: "Equivalent Resistance in Parallel vs Series Combinations",
-        urgency_tag: "Section C • 88% Frequency",
-        probability_score: 88,
-        appearance_frequency: 8,
-        years_appeared: [2015, 2016, 2018, 2020, 2022, 2024],
-        examiner_insight: "Appeared in 2015, 2016, 2018, 2020, 2022, and 2024 annual exams. Paper setter switches between 2-resistor parallel and 3-resistor series circuits."
-      },
-      {
-        id: 4,
-        chapter_name: "Chemical Equilibrium",
-        question_summary: "Le Chatelier's Principle & Kc Equilibrium Constant Units",
-        urgency_tag: "Core Chapter • 92% Frequency",
-        probability_score: 92,
-        appearance_frequency: 9,
-        years_appeared: [2014, 2016, 2017, 2018, 2021, 2022, 2023, 2024],
-        examiner_insight: "Appeared in 9 out of 10 board papers (2014, 2016, 2017, 2018, 2021, 2022, 2023, 2024). Mandatory 4-mark short question in Section B."
-      },
-      {
-        id: 5,
-        chapter_name: "Gaseous Exchange & Respiration",
-        question_summary: "Alveoli Adaptations & Human Breathing Mechanism",
-        urgency_tag: "Diagram & Viva • 85% Frequency",
-        probability_score: 85,
-        appearance_frequency: 7,
-        years_appeared: [2015, 2017, 2019, 2020, 2022, 2024],
-        examiner_insight: "Appeared in 2015, 2017, 2019, 2020, 2022, and 2024 board exams. High-yield for both theory Section B and 15-mark lab spotting."
-      }
-    ];
+    // fall through to the local list
   }
+  return radarFor(grade, subject);
 }
 
 export async function clearMistakeVaultItem(question_id?: string) {

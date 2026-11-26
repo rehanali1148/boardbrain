@@ -8,7 +8,7 @@ import RoleGuard from "@/components/navigation/RoleGuard";
 
 export const metadata: Metadata = {
   title: "BoardBrain | Your Board Exam AI Guru - BSEK & AKU-EB",
-  description: "BoardBrain: 15-Year past-paper grounded Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform and AI Guru for Class 9 & 10 students and teachers.",
+  description: "BoardBrain: syllabus-based Pakistani Board (BSEK Karachi & AKU-EB) academic intelligence platform and AI Guru for Class 9 & 10 students and teachers.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/boardbrain-icon.png",

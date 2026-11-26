@@ -88,8 +88,8 @@ export default function HomePage() {
         {/* Trust & Pilot Proof */}
         <div className="mt-12 pt-8 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center w-full max-w-3xl">
           <div>
-            <div className="text-2xl sm:text-3xl font-black text-emerald-400">15+ Yrs</div>
-            <div className="text-xs text-slate-400 mt-1">Past Papers Indexed</div>
+            <div className="text-2xl sm:text-3xl font-black text-emerald-400">2 Boards</div>
+            <div className="text-xs text-slate-400 mt-1">BSEK &amp; AKU-EB, Class 9-10</div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-black text-sky-400">100%</div>
