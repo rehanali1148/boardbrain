@@ -316,7 +316,7 @@ export default function PracticeBlitzPage() {
             ) : (
               <button
                 onClick={handleSubmitBlitz}
-                disabled={submitting || Object.keys(userAnswers).length === 0}
+                disabled={submitting || questions.length === 0}
                 className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all"
               >
                 {submitting ? (
