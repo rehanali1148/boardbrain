@@ -7,7 +7,7 @@ import {
   PracticalItem
 } from "./curriculumData";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://130.210.108.6:8000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export interface UserProfile {
   erp_user_id: string;
@@ -300,148 +300,181 @@ export async function generateExam(payload: {
 
   // Resilient Exam Generator Fallback (Matches exact schema for page.tsx)
   const sub = payload.subject || "Physics";
-  const gr = payload.grade || 10;
-  const isMidOrMock = payload.exam_format.includes("40") || payload.exam_format.includes("60");
-  const totalMarks = payload.exam_format.includes("60") ? 60 : payload.exam_format.includes("40") ? 40 : 20;
-  const timeAllowed = payload.exam_format.includes("60") ? "3 Hours" : payload.exam_format.includes("40") ? "1.5 Hours" : "45 Minutes";
+  const gr = Number(payload.grade) || 10;
+  const is60 = payload.exam_format.includes("60");
+  const is40 = payload.exam_format.includes("40");
+  const totalMarks = is60 ? 60 : is40 ? 40 : 20;
+  const timeAllowed = is60 ? "3 Hours" : is40 ? "1.5 Hours" : "45 Minutes";
+
+  const mcqCount = is60 ? 12 : is40 ? 8 : 4;
+  const shortCount = is60 ? 6 : is40 ? 4 : 2;
+  const longCount = is60 ? 3 : is40 ? 2 : 1;
+
+  // Filter real questions by grade and subject
+  const subjectQuestions = FALLBACK_QUESTIONS.filter(
+    (q) => q.grade === gr && q.subject.toLowerCase() === sub.toLowerCase()
+  );
+  const pool = subjectQuestions.length >= 3 ? subjectQuestions : FALLBACK_QUESTIONS.filter((q) => q.subject.toLowerCase() === sub.toLowerCase());
+
+  const cleanOption = (text: string) => text.replace(/\s*\(Verified\)/gi, "").trim();
+
+  // Build Row A Questions
+  const rowA: any[] = [];
+  const rubrics: any[] = [];
+
+  // Section A: MCQs (1 Mark Each)
+  for (let i = 0; i < mcqCount; i++) {
+    const q = pool[i % pool.length];
+    let parsedOpts: any = { A: "Option A", B: "Option B", C: "Option C", D: "Option D" };
+    try { parsedOpts = JSON.parse(q.options_json); } catch (e) {}
+
+    const cleanOpts: Record<string, string> = {};
+    for (const [k, v] of Object.entries(parsedOpts)) {
+      cleanOpts[k] = cleanOption(String(v));
+    }
+
+    rowA.push({
+      section: "Section A",
+      text_en: q.text_en,
+      text_ur: q.text_ur,
+      options: JSON.stringify(cleanOpts),
+      marks: 1,
+      correct_option: q.correct_option
+    });
+  }
+
+  rubrics.push({
+    question_no: `Section A (Q1.1 - Q1.${mcqCount})`,
+    marks: mcqCount,
+    key: `1.0 Mark per correct MCQ bubble (${rowA.map((q, idx) => `Q1.${idx + 1}:${q.correct_option}`).join(", ")}). Incorrect or double-bubbles receive 0.`
+  });
+
+  // Section B: Short Reasoning Questions (4 Marks Each)
+  const shortTemplates = [
+    {
+      en: `Explain the physical significance of ${sub === "Chemistry" ? "Chemical Equilibrium and Kc value" : sub === "Biology" ? "Mitosis vs Meiosis in cell division" : "Simple Harmonic Motion and state its two necessary conditions"}.`,
+      ur: `سائنسی دلائل کے ساتھ مختصر وضاحت کریں اور دو بنیادی شرائط تحریر کریں۔`,
+      marks: 4,
+      key: `• Correct scientific definition / statement (1.5 Marks)\n• Mathematical formula or two necessary conditions (1.5 Marks)\n• Practical board example with proper terminology (1.0 Mark)`
+    },
+    {
+      en: `Differentiate between ${sub === "Chemistry" ? "Arrhenius Acid and Bronsted-Lowry Acid with equations" : sub === "Biology" ? "Aerobic and Anaerobic Respiration" : "Speed and Velocity with their respective SI units and vector nature"}.`,
+      ur: `مناسب مثالوں اور ایس آئی یونٹس کی مدد سے واضح فرق بیان کریں۔`,
+      marks: 4,
+      key: `• Distinction point 1 with reasoning (1.5 Marks)\n• Distinction point 2 with reasoning (1.5 Marks)\n• Proper chemical equation / formula with SI unit (1.0 Mark)`
+    },
+    {
+      en: `What is the role of ${sub === "Chemistry" ? "Catalyst in reversible reactions" : sub === "Biology" ? "Enzymes in biological metabolism" : "Friction in daily life and state two methods to reduce it"}?`,
+      ur: `روزمرہ زندگی میں اس کا کردار اور اس کو کم کرنے کے دو طریقے تحریر کریں۔`,
+      marks: 4,
+      key: `• Operational definition & mechanism (2.0 Marks)\n• Two clear board-approved methods/points (2.0 Marks)`
+    },
+    {
+      en: `Derive the mathematical relationship for ${sub === "Chemistry" ? "Kc for the reaction N2 + 3H2 <=> 2NH3" : sub === "Biology" ? "Cellular Respiration ATP production" : "Ohm's Law (V = I * R) with graphical verification"}.`,
+      ur: `ریاضیاتی مساوات اخذ کریں اور حتمی نتائج واضح کریں۔`,
+      marks: 4,
+      key: `• Initial statement of law/theory (1.0 Mark)\n• Step-by-step derivation without missing steps (2.0 Marks)\n• Final equation boxed with standard units (1.0 Mark)`
+    },
+    {
+      en: `Explain with a neat diagram ${sub === "Chemistry" ? "the structure of Rutherford's Atomic Model" : sub === "Biology" ? "the structure of a Nephron" : "Total Internal Reflection and Critical Angle"}.`,
+      ur: `صاف ستھری پنسل کی ڈایاگرام اور لیبلنگ کے ساتھ وضاحت کریں۔`,
+      marks: 4,
+      key: `• Neat pencil diagram with right-aligned labels (2.0 Marks)\n• Conceptual scientific explanation (2.0 Marks)`
+    },
+    {
+      en: `State the conditions required for ${sub === "Chemistry" ? "Dynamic Equilibrium in a closed system" : sub === "Biology" ? "Transpiration in plants" : "Resonance in oscillating bodies"}.`,
+      ur: `بنیادی شرائط اور سائنسی وجوہات درج کریں۔`,
+      marks: 4,
+      key: `• Complete list of conditions (2.0 Marks)\n• Scientific justification per board syllabus (2.0 Marks)`
+    }
+  ];
+
+  for (let i = 0; i < shortCount; i++) {
+    const t = shortTemplates[i % shortTemplates.length];
+    rowA.push({
+      section: "Section B",
+      text_en: t.en,
+      text_ur: t.ur,
+      marks: 4
+    });
+    rubrics.push({
+      question_no: `Section B (Q${i + 2})`,
+      marks: 4,
+      key: t.key
+    });
+  }
+
+  // Section C: Long / Numerical Question (8 Marks Each for Exact Math)
+  const longTemplates = [
+    {
+      en: sub === "Chemistry"
+        ? `Comprehensive Problem: 4.0 moles of H2 and 4.0 moles of I2 are reacted in a 1 dm³ vessel at 440°C. If Kc = 49, calculate the equilibrium concentration of HI. Show complete Given Data, Formula, Working, and Units.`
+        : sub === "Biology"
+        ? `Detailed Descriptive Question: Explain the mechanism of Breathing in humans (Inspiration and Expiration). Draw a neat labeled diagram of human respiratory system and describe adaptation of alveoli.`
+        : `Comprehensive Board Numerical: An object 4.0 cm high is placed at a distance of 12.0 cm in front of a concave mirror of focal length 8.0 cm. Calculate: (a) Position of the image (b) Height and nature of the image. Show complete Given Data, Formula, Working, and SI Units.`,
+      ur: `جامع تفصیلی سوال: تمام مرحلہ وار کیلکولیشن، ڈایاگرام اور ایس آئی یونٹس واضح طور پر درج کریں۔`,
+      marks: 8,
+      key: `• Step 1: Given Data with correct variable symbols & SI conversions (2.0 Marks)\n• Step 2: Formula declaration prior to substitution (2.0 Marks)\n• Step 3: Step-by-step arithmetic substitution without skipping lines (2.5 Marks)\n• Step 4: Final answer boxed with accurate SI unit (1.5 Marks)`
+    },
+    {
+      en: `Derive the Second Equation of Motion (S = vi*t + 0.5*a*t²) using Speed-Time Graph. State clearly the assumptions, initial conditions, and explain the physical meaning of total area under the slope.`,
+      ur: `سپیڈ ٹائم گراف کی مدد سے حرکت کی دوسری مساوات اخذ کریں۔`,
+      marks: 8,
+      key: `• Accurate speed-time graph drawn with pencil & labeled axes (2.0 Marks)\n• Area of rectangle + Area of triangle derivation steps (4.0 Marks)\n• Final boxed equation with SI unit note (2.0 Marks)`
+    },
+    {
+      en: `State Newton's Law of Universal Gravitation. Derive the mathematical expression for the Mass of Earth (M_e = g*R^2 / G). Compute numerical value of Mass of Earth using R = 6.4 x 10^6 m and G = 6.67 x 10^-11 N m^2/kg^2.`,
+      ur: `نیوٹن کا قانونِ کشش ثقل بیان کریں اور زمین کے وزن کی ریاضیاتی مساوات اخذ کریں۔`,
+      marks: 8,
+      key: `• Statement of Universal Law of Gravitation (2.0 Marks)\n• Complete derivation formula equating weight to gravitational force (3.0 Marks)\n• Numerical calculation of Mass of Earth with standard units 6.0 x 10^24 kg (3.0 Marks)`
+    }
+  ];
+
+  for (let i = 0; i < longCount; i++) {
+    const t = longTemplates[i % longTemplates.length];
+    rowA.push({
+      section: "Section C",
+      text_en: t.en,
+      text_ur: t.ur,
+      marks: 8
+    });
+    rubrics.push({
+      question_no: `Section C (Q${shortCount + i + 2})`,
+      marks: 8,
+      key: t.key
+    });
+  }
+
+  // Build Parallel Row B Variants (Anti-Cheating with shifted values/shuffled options)
+  const rowB: any[] = rowA.map((q) => {
+    if (q.section === "Section A") {
+      let opts: any = {};
+      try { opts = JSON.parse(q.options); } catch (e) {}
+      const keys = Object.keys(opts);
+      const reversedOpts: any = {};
+      reversedOpts["A"] = opts[keys[3] || "D"] || opts.A;
+      reversedOpts["B"] = opts[keys[2] || "C"] || opts.B;
+      reversedOpts["C"] = opts[keys[1] || "B"] || opts.C;
+      reversedOpts["D"] = opts[keys[0] || "A"] || opts.D;
+
+      return {
+        ...q,
+        text_en: `[ROW B] ${q.text_en}`,
+        options: JSON.stringify(reversedOpts),
+      };
+    }
+    return {
+      ...q,
+      text_en: `[ROW B PARALLEL VARIANT] ${q.text_en}`,
+    };
+  });
 
   return {
     total_marks: totalMarks,
     time_allowed: timeAllowed,
-    row_a_questions: [
-      {
-        section: "Section A",
-        text_en: `Which of the following is the standard base SI unit or fundamental law in ${sub} (Class ${gr})?`,
-        text_ur: `مندرجہ ذیل میں سے کون سا بنیادی قانون یا ایس آئی یونٹ ہے؟`,
-        options: JSON.stringify({
-          A: "Kilogram / Fundamental Constant (Verified)",
-          B: "Derived Secondary Unit",
-          C: "Arbitrary Arbitrary Scale",
-          D: "Relative Ratio"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section A",
-        text_en: `In standard board exams, what condition is necessary for equilibrium or state stability in ${sub}?`,
-        text_ur: `بورڈ کے امتحان کے مطابق ایکویلیبریم یا استحکام کے لیے بنیادی شرط کیا ہے؟`,
-        options: JSON.stringify({
-          A: "Net force or net reaction rates must balance (Verified)",
-          B: "External disturbance must increase",
-          C: "Energy must be completely destroyed",
-          D: "Volume must double"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section A",
-        text_en: `Calculate the rate or parameter if the measured initial value is doubled while keeping time constant:`,
-        text_ur: `اگر ابتدائی قیمت کو دوگنا کر دیا جائے تو حتمی قیمت پر کیا اثر پڑے گا؟`,
-        options: JSON.stringify({
-          A: "Doubles proportionally (Verified)",
-          B: "Reduces to zero",
-          C: "Halves",
-          D: "Remains unaffected"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section B",
-        text_en: `State the fundamental principle of ${sub} covered in the selected curriculum chapters and write its mathematical equation.`,
-        text_ur: `منتخب کردہ اسباق کا بنیادی اصول بیان کریں اور اس کی ریاضیاتی مساوات تحریر کریں۔`,
-        marks: 4
-      },
-      {
-        section: "Section B",
-        text_en: `Give any two distinct differences with labeled examples between the primary phenomena in this chapter.`,
-        text_ur: `اس سبق کے دو اہم مظاہر کے درمیان واضح فرق اور مثالیں تحریر کریں۔`,
-        marks: 4
-      },
-      {
-        section: "Section C",
-        text_en: `Comprehensive Numerical: A system undergoes a uniform transition where initial value is 10 SI units and time is 5 seconds. Compute the total resulting change. Show complete Given Data, Formula, Working, and SI Units.`,
-        text_ur: `جامع حسابی سوال: تمام دیا گیا ڈیٹا، فارمولا اور ایس آئی یونٹس واضح طور پر درج کریں۔`,
-        marks: 7
-      }
-    ],
-    row_b_questions: [
-      {
-        section: "Section A",
-        text_en: `[ROW B VARIANT] Which dimensional property governs the behavior in ${sub} under identical board SLOs?`,
-        text_ur: `رو بی متوازی سوال: کون سی خصوصیت بنیادی قانون پر اثر انداز ہوتی ہے؟`,
-        options: JSON.stringify({
-          A: "Scalar invariant quantity",
-          B: "Directly measured standard property (Verified)",
-          C: "Arbitrary estimate",
-          D: "Uncalibrated parameter"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section A",
-        text_en: `[ROW B VARIANT] If resistance or concentration shifts by a factor of two, the reciprocal equilibrium responds by:`,
-        text_ur: `رو بی: اگر بنیادی مقدار تبدیل ہو تو نظام کس سمت میں حرکت کرے گا؟`,
-        options: JSON.stringify({
-          A: "Shifting to counteract the applied change (Verified)",
-          B: "Remaining completely motionless",
-          C: "Disappearing instantly",
-          D: "Multiplying infinitely"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section A",
-        text_en: `[ROW B VARIANT] Dimensional analysis confirmation: The proper unit for recording final experimental findings is:`,
-        text_ur: `رو بی: آخری تجرباتی نتائج لکھنے کے لیے درست ایس آئی یونٹ ہے:`,
-        options: JSON.stringify({
-          A: "Standard SI unit symbol (Verified)",
-          B: "Mixed non-metric notation",
-          C: "No unit notation",
-          D: "Percentage without basis"
-        }),
-        marks: 1
-      },
-      {
-        section: "Section B",
-        text_en: `[ROW B VARIANT] Derive the reciprocal relationship from first principles for ${sub} Class ${gr}.`,
-        text_ur: `رو بی متوازی سوال: بنیادی اصولوں کی مدد سے مطلوبہ مساوات اخذ کریں۔`,
-        marks: 4
-      },
-      {
-        section: "Section B",
-        text_en: `[ROW B VARIANT] Explain with a neat pencil diagram the operational mechanism of the setup used in this topic.`,
-        text_ur: `رو بی: صاف ستھری پنسل کی ڈایاگرام کی مدد سے طریقہ کار کی وضاحت کریں۔`,
-        marks: 4
-      },
-      {
-        section: "Section C",
-        text_en: `[ROW B VARIANT] Parallel Numerical Problem: Given initial quantity 20 SI units and transition duration 4 seconds, derive the final output rate with step rubric breakdown.`,
-        text_ur: `رو بی عددی مسئلہ: مرحلہ وار مارکنگ روبرک کے مطابق حل کریں۔`,
-        marks: 7
-      }
-    ],
-    rubrics: [
-      {
-        question_no: "Section A (Q1.1 - Q1.3)",
-        marks: 3,
-        key: "1.0 Mark per correct MCQ bubble. Incorrect or ambiguous double-fills receive 0 marks."
-      },
-      {
-        question_no: "Section B (Q2)",
-        marks: 4,
-        key: "• Precise statement of law / definition (1.0 Mark)\n• Mathematical Formula / Equation with symbols defined (1.5 Marks)\n• Explanation of physical significance (1.0 Mark)\n• Standard SI Unit (0.5 Mark)"
-      },
-      {
-        question_no: "Section B (Q3)",
-        marks: 4,
-        key: "• Point of distinction 1 with justification (1.5 Marks)\n• Point of distinction 2 with justification (1.5 Marks)\n• Accurate neat scientific examples / sketches (1.0 Mark)"
-      },
-      {
-        question_no: "Section C (Q4)",
-        marks: 7,
-        key: "• Step 1: Given Data with correct variable symbols & SI conversions (1.5 Marks)\n• Step 2: Formula declaration prior to substitution (1.5 Marks)\n• Step 3: Step-by-step arithmetic substitution & calculation (2.5 Marks)\n• Step 4: Final answer boxed with accurate SI unit (1.5 Marks)"
-      }
-    ]
+    row_a_questions: rowA,
+    row_b_questions: rowB,
+    rubrics: rubrics
   };
 }
 

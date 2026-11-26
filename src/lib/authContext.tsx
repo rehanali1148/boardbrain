@@ -42,13 +42,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // Attempt demo token on mount
-    switchRole("student_10");
+    // Detect role from path or localStorage so reloading /teacher keeps teacher role
+    const savedRole = (typeof window !== "undefined" ? localStorage.getItem("boardbrain_role") : null) as any;
+    const isTeacher = typeof window !== "undefined" && window.location.pathname.startsWith("/teacher");
+    if (savedRole && ["student_10", "student_09", "teacher", "campus_head"].includes(savedRole)) {
+      switchRole(savedRole);
+    } else if (isTeacher) {
+      switchRole("teacher");
+    } else {
+      switchRole("student_10");
+    }
   }, []);
 
   const switchRole = async (newRole: "student_10" | "student_09" | "teacher" | "campus_head") => {
     setIsLoading(true);
     setRoleKey(newRole);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("boardbrain_role", newRole);
+    }
     try {
       const data = await getDemoToken(newRole);
       if (data && data.user) {

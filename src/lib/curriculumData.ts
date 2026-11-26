@@ -562,6 +562,42 @@ export function queryAiGuruKnowledge(question: string): {
 } {
   const q = question.toLowerCase().trim();
 
+  // 0. Coulomb's Law & Electrostatics
+  if (q.includes("coulomb") || q.includes("electrostatic") || q.includes("electric charge") || q.includes("q1") || q.includes("q2")) {
+    return {
+      headline: "⚡ Coulomb's Law & Electrostatic Force (Class 10 Physics)",
+      explanation: "Coulomb's Law states that the electrostatic force of attraction or repulsion between two point charges is directly proportional to the product of the magnitude of charges (q₁ · q₂) and inversely proportional to the square of the distance (r²) between their centers.",
+      formula: "F = k * (q₁ * q₂) / r²   where k = 1 / (4πε₀) = 9.0 × 10⁹ N·m²/C²",
+      unit: "Force F in Newtons (N), Charges q in Coulombs (C), Distance r in meters (m)",
+      stepTip: "Examiner Trap: Distance r must always be converted to meters (m) inside Given Data! If charges are given in microcoulombs (μC), multiply by 10⁻⁶ C before calculation.",
+      challengeQuestion: "Agar dono charges ke darmiyan distance (r) ko double (2r) kar diya jaye, to Electrostatic Force F par kya farq paray ga?"
+    };
+  }
+
+  // 0b. Newton's Laws of Motion & Gravitation
+  if (q.includes("newton") || q.includes("law of gravitation") || q.includes("f = ma") || q.includes("inertia") || q.includes("action and reaction")) {
+    return {
+      headline: "🍎 Newton's Laws of Motion & Universal Gravitation (Class 9 & 10 Physics)",
+      explanation: "• 1st Law (Law of Inertia): Body continues state of rest or uniform motion unless acted upon by external net force.\n• 2nd Law: When force acts on a body, acceleration is produced in direction of force: F = m·a.\n• 3rd Law: To every action there is always an equal and opposite reaction.\n• Law of Gravitation: F = G · (m₁ · m₂) / r² where G = 6.67 × 10⁻¹¹ N·m²/kg².",
+      formula: "2nd Law: F = m * a   |   Universal Gravitation: F = G * (m1 * m2) / r²",
+      unit: "Force F in Newtons (N = kg·m/s²), Mass in kg, Acceleration in m/s²",
+      stepTip: "In numericals, 1 Newton is defined as the force that produces an acceleration of 1 m/s² in a body of mass 1 kg. Always write F = ma first before plugging numbers!",
+      challengeQuestion: "Agar aik 5 kg ki body par 20 N ki force lagai jaye, to is ka acceleration kitna hoga?"
+    };
+  }
+
+  // 0c. Boyle's & Charles's Gas Laws (Class 9 Chemistry)
+  if (q.includes("boyle") || q.includes("charles") || q.includes("gas law") || q.includes("p1v1")) {
+    return {
+      headline: "🧪 Boyle's & Charles's Laws (Physical States of Matter)",
+      explanation: "• Boyle's Law: At constant temperature, the volume of a given mass of gas is inversely proportional to its pressure: P₁V₁ = P₂V₂ (or P ∝ 1/V).\n• Charles's Law: At constant pressure, the volume of a given mass of gas is directly proportional to absolute temperature: V₁/T₁ = V₂/T₂ (or V ∝ T in Kelvin).",
+      formula: "Boyle: P₁ * V₁ = P₂ * V₂ (T = const)   |   Charles: V₁ / T₁ = V₂ / T₂ (P = const)",
+      unit: "Pressure in atm or Pa (1 atm = 760 mmHg = 101,325 Pa), Temperature in Kelvin (K = °C + 273)",
+      stepTip: "Examiner Trap: In Charles's Law numericals, Celsius temperature MUST be converted to Kelvin by adding 273, otherwise you get 0 marks!",
+      challengeQuestion: "Agar aik gas ka volume 27°C par 2 dm³ hai, to temperature Kelvin mein kitna hoga?"
+    };
+  }
+
   // 1. Velocity & Speed
   if (q.includes("velocity") || q.includes("speed") || q.includes("raftar")) {
     return {
@@ -587,7 +623,7 @@ export function queryAiGuruKnowledge(question: string): {
   }
 
   // 3. SI Units
-  if (q.includes("si unit") || q.includes("unit") || q.includes("dimensions")) {
+  if (q.includes("si unit") || q.includes("base unit") || q.includes("derived unit") || q.includes("dimensions") || q === "unit" || q === "units") {
     return {
       headline: "International System of Units (SI Units) Guide",
       explanation: "Board examiners strictly deduct 0.5 marks for missing or wrong units! SI consists of 7 Base Units: Length (meter - m), Mass (kilogram - kg), Time (second - s), Electric Current (ampere - A), Temperature (kelvin - K), Amount of substance (mole - mol), Luminous intensity (candela - cd).",

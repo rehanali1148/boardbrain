@@ -108,8 +108,9 @@ export default function ExamGeneratorPage() {
               value={`${board}_${grade}`}
               onChange={(e) => {
                 const parts = e.target.value.split("_");
-                setBoard(parts[0] === "AKUEB" ? "AKUEB" : "BSEK_KARACHI");
-                setGrade(Number(parts[1]));
+                setBoard(e.target.value.includes("AKUEB") ? "AKUEB" : "BSEK_KARACHI");
+                const lastPart = parts[parts.length - 1];
+                setGrade(Number(lastPart) || 10);
               }}
               className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200"
             >
@@ -260,7 +261,7 @@ export default function ExamGeneratorPage() {
                           <div className="flex flex-wrap gap-4 pl-4 pt-1 font-sans text-xs">
                             {Object.entries(opts).map(([k, v]: any) => (
                               <span key={k}>
-                                <b>({k})</b> {v}
+                                <b>({k})</b> {String(v).replace(/\s*\(Verified\)/gi, "").trim()}
                               </span>
                             ))}
                           </div>

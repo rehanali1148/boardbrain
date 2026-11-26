@@ -15,8 +15,19 @@ export default function TeacherGoldNotesPage() {
 
   const fetchNotes = async () => {
     try {
+      if (typeof window !== "undefined") {
+        const local = localStorage.getItem("boardbrain_gold_notes");
+        if (local) {
+          setNotes(JSON.parse(local));
+          setLoading(false);
+          return;
+        }
+      }
       const data = await getTeacherGoldNotes(user?.campus || "Saddar", 10, "Physics");
       setNotes(data);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("boardbrain_gold_notes", JSON.stringify(data));
+      }
     } catch (e) {
       console.warn("Gold notes fetch fallback:", e);
     } finally {
@@ -31,7 +42,6 @@ export default function TeacherGoldNotesPage() {
   const handleCreateNote = async () => {
     if (!topic || !tipText) return;
     try {
-      // In local demo, push into local state
       const newNote = {
         id: Date.now(),
         teacher_name: user?.full_name || "Sir Farhan Ahmed",
@@ -42,7 +52,11 @@ export default function TeacherGoldNotesPage() {
         gold_tip_text: tipText,
         created_at: new Date().toISOString(),
       };
-      setNotes([newNote, ...notes]);
+      const updated = [newNote, ...notes];
+      setNotes(updated);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("boardbrain_gold_notes", JSON.stringify(updated));
+      }
       setTopic("");
       setTipText("");
       setPinnedSuccess(true);
