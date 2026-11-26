@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
 import { getStudentProgress, getStudentGoldNotes, getStudentBadges } from "@/lib/api";
+import { getInsights, getVault } from "@/lib/learnerModel";
 import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 import {
   Flame,
@@ -84,6 +85,17 @@ export default function StudentHomePage() {
     getStudentGoldNotes(user.class_grade).then(setGoldNotes);
   }, [user?.class_grade]);
 
+  const [insights, setInsights] = useState<any>(null);
+  const [vaultCount, setVaultCount] = useState(0);
+  const [vaultFirst, setVaultFirst] = useState<string>("");
+  useEffect(() => {
+    if (!user) return;
+    setInsights(getInsights());
+    const v = getVault();
+    setVaultCount(v.length);
+    setVaultFirst(v[0]?.chapter_name || "");
+  }, [user]);
+
   // Same number the Awards page shows
   const [earnedBadges, setEarnedBadges] = useState<number | null>(null);
   useEffect(() => {
@@ -129,7 +141,7 @@ export default function StudentHomePage() {
               </div>
               <div>
                 <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Streak</p>
-                <p className="text-sm font-bold text-slate-100">{progress?.streak_days || 4} Days</p>
+                <p className="text-sm font-bold text-slate-100">{insights ? insights.streakDays : 0} {insights?.streakDays === 1 ? "Day" : "Days"}</p>
               </div>
             </div>
 
@@ -166,56 +178,79 @@ export default function StudentHomePage() {
         </div>
       )}
 
-      {/* Pass + A-1 Readiness Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Theory Readiness Card */}
-        <div className="bg-[#10192D] border border-slate-800 rounded-xl p-4 shadow-sm relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-brand-emerald uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4 text-brand-emerald" />
-                <span>Theory Readiness (BSEK Section A/B/C)</span>
-              </div>
-              <h3 className="text-2xl font-black text-slate-100">{progress?.theory_readiness_pct || 74}%</h3>
-              <p className="text-xs text-slate-400">
-                <span className="text-brand-emerald font-semibold">✓ Above the 33% pass mark.</span> Working toward 80%+ A-1 Shield.
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full border-4 border-brand-emerald flex items-center justify-center text-xs font-bold text-brand-emerald bg-brand-emerald/10">
-              {progress?.theory_readiness_pct || 74}%
-            </div>
-          </div>
-          <div className="w-full bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-brand-amber to-brand-emerald h-full rounded-full transition-all duration-500"
-              style={{ width: `${progress?.theory_readiness_pct || 74}%` }}
-            />
-          </div>
+      {/* BoardBrain's read on you: built from how this student actually answers */}
+      <div className="bg-gradient-to-br from-indigo-950/60 via-[#10192D] to-[#10192D] border border-indigo-700/50 rounded-2xl p-5 space-y-4 shadow-lg">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-bold text-indigo-200 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-300" />
+            <span>BoardBrain&apos;s read on you</span>
+          </h3>
+          {insights?.enoughData && (
+            <span className="text-[10px] text-indigo-300/80">from {insights.totalAttempts} answers</span>
+          )}
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm text-slate-100 leading-relaxed">{insights?.headline}</p>
+          <p className="font-nastaliq text-sm text-slate-400 text-right" dir="rtl">{insights?.headlineUr}</p>
         </div>
 
-        {/* Practical Readiness Card */}
-        <div className="bg-[#10192D] border border-slate-800 rounded-xl p-4 shadow-sm relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-brand-sky uppercase tracking-wider">
-                <FlaskConical className="w-4 h-4 text-brand-sky" />
-                <span>15-Mark Lab Practical Readiness</span>
-              </div>
-              <h3 className="text-2xl font-black text-slate-100">{progress?.practical_readiness_pct || 82.5}%</h3>
-              <p className="text-xs text-slate-400">
-                <span className="text-brand-sky font-semibold">✓ 6/15 Pass Cleared.</span> Journal + Viva + Observation Tables ready.
-              </p>
+        {insights?.enoughData && (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <p className="text-lg font-black text-white">{insights.accuracy}%</p>
+              <p className="text-[10px] text-slate-400">MCQs correct</p>
             </div>
-            <div className="w-12 h-12 rounded-full border-4 border-brand-sky flex items-center justify-center text-xs font-bold text-brand-sky bg-brand-sky/10">
-              {progress?.practical_readiness_pct || 82.5}%
+            <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <p className="text-sm font-bold text-emerald-300 truncate">{insights.strongest?.chapter || "—"}</p>
+              <p className="text-[10px] text-slate-400">strongest</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <p className="text-sm font-bold text-rose-300 truncate">{insights.weakest?.chapter || "—"}</p>
+              <p className="text-[10px] text-slate-400">needs work</p>
             </div>
           </div>
-          <div className="w-full bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-brand-sky to-brand-indigo h-full rounded-full transition-all duration-500"
-              style={{ width: `${progress?.practical_readiness_pct || 82.5}%` }}
-            />
+        )}
+
+        {insights?.misconceptions?.length ? (
+          <div className="p-3 rounded-xl bg-rose-950/30 border border-rose-800/50 text-xs text-rose-200 space-y-1">
+            <p className="font-bold">🧠 The idea that keeps tripping you up:</p>
+            <p>{insights.misconceptions[0]}</p>
           </div>
+        ) : null}
+
+        {insights?.chapters?.filter((c: any) => c.attempts >= 2).length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {insights.chapters
+              .filter((c: any) => c.attempts >= 2)
+              .map((c: any) => (
+                <span
+                  key={c.subject + c.chapter}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-semibold border ${
+                    c.state === "mastered"
+                      ? "bg-emerald-950/50 border-emerald-700 text-emerald-300"
+                      : c.state === "misconception"
+                      ? "bg-rose-950/50 border-rose-700 text-rose-300"
+                      : c.state === "gap"
+                      ? "bg-orange-950/50 border-orange-700 text-orange-300"
+                      : "bg-amber-950/50 border-amber-700 text-amber-300"
+                  }`}
+                >
+                  {c.chapter}: {c.state === "mastered" ? "mastered" : c.state === "misconception" ? "wrong idea" : c.state === "gap" ? "not learnt yet" : "shaky"} ({c.accuracy}%)
+                </span>
+              ))}
+          </div>
+        ) : null}
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-800">
+          <p className="text-xs text-slate-300">
+            <b className="text-indigo-200">Do this next:</b> {insights?.nextAction}
+          </p>
+          <Link
+            href={insights?.weakest?.state === "misconception" ? "/student/ustad" : "/student/practice"}
+            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shrink-0 text-center"
+          >
+            Go →
+          </Link>
         </div>
       </div>
 
@@ -341,7 +376,7 @@ export default function StudentHomePage() {
       </div>
 
       {/* Mistake Vault Attention Box */}
-      {progress?.mistake_vault_pending_count > 0 && (
+      {vaultCount > 0 && (
         <div className="bg-amber-950/20 border border-amber-800/40 rounded-xl p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -349,10 +384,10 @@ export default function StudentHomePage() {
             </div>
             <div>
               <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wide">
-                Spaced-Repetition Mistake Vault ({progress.mistake_vault_pending_count} Pending)
+                Mistake Vault ({vaultCount} to re-try)
               </h4>
               <p className="text-xs text-slate-300">
-                You missed a question on <span className="font-semibold text-white">Simple Harmonic Motion</span>. Scheduled for retry today.
+                You missed a question on <span className="font-semibold text-white">{vaultFirst}</span>. Re-try it after 48 hours to lock it in.
               </p>
             </div>
           </div>

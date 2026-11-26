@@ -401,6 +401,26 @@ export async function pinGoldNote(note: {
   return fetchWithAuth("/teacher/gold-notes", { method: "POST", body: JSON.stringify(note) });
 }
 
+/** Ask the AI Guru. Throws Error("AI_OFF") when the AI is not switched on, so the page can use its built-in answers. */
+export async function askGuru(payload: {
+  message: string;
+  history: { role: "user" | "model"; text: string }[];
+  class_grade: number;
+  board: string;
+  learner_profile: string;
+}) {
+  return fetchWithAuth("/student/guru", { method: "POST", body: JSON.stringify(payload) });
+}
+
+/** Fresh AI practice MCQs for one chapter (same shape as bank questions, with is_ai = true). */
+export async function getAiPractice(grade: number, subject: string, chapter: string, count = 5): Promise<any[]> {
+  const data = await fetchWithAuth("/student/ai-practice", {
+    method: "POST",
+    body: JSON.stringify({ grade, subject, chapter, count }),
+  });
+  return Array.isArray(data) ? data : [];
+}
+
 /** Gold notes as students see them (read-only, no teacher token needed). */
 export async function getStudentGoldNotes(classGrade: number = 10) {
   try {

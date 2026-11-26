@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
-import { escalateDoubt } from "@/lib/api";
+import { escalateDoubt, askGuru } from "@/lib/api";
+import { learnerSummaryForAI, recordGuruQuestion } from "@/lib/learnerModel";
 import { queryAiGuruKnowledge } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import {
@@ -22,6 +23,8 @@ import {
 interface Message {
   role: "user" | "ustad";
   text: string;
+  isAi?: boolean;
+  misconception?: string;
   structuredData?: {
     headline: string;
     explanation: string;
@@ -69,39 +72,77 @@ export default function SocraticUstadPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (textToSend?: string) => {
+  const [lastSubject, setLastSubject] = useState("Physics");
+
+  const handleSend = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
-    if (!text) return;
+    if (!text || isTyping) return;
 
     const newMsgs: Message[] = [...messages, { role: "user", text }];
     setMessages(newMsgs);
     setInputText("");
     setIsTyping(true);
+    recordGuruQuestion(text);
 
-    // Call Socratic Intelligence Engine
-    setTimeout(() => {
-      const knowledge = queryAiGuruKnowledge(text);
+    // 1. Real AI Guru (Gemini), personalised with this student's learner profile
+    try {
+      const history = messages.slice(1).map((m) => ({ role: m.role === "user" ? ("user" as const) : ("model" as const), text: m.text }));
+      const ai = await askGuru({
+        message: text,
+        history,
+        class_grade: user?.class_grade || 10,
+        board: user?.board || "BSEK",
+        learner_profile: learnerSummaryForAI(),
+      });
+      if (ai?.detected_subject) setLastSubject(ai.detected_subject);
+      const explanation = [ai.explanation, ai.board_answer ? `\n📝 Board answer:\n${ai.board_answer}` : ""].join("");
+      setMessages([
+        ...newMsgs,
+        {
+          role: "ustad",
+          text: `${ai.headline}\n\n${explanation}`,
+          isAi: true,
+          misconception: ai.misconception_spotted || "",
+          structuredData: {
+            headline: ai.headline,
+            explanation,
+            formula: ai.formula || undefined,
+            unit: ai.unit || undefined,
+            stepTip: ai.step_tip,
+            challengeQuestion: ai.challenge_question,
+          },
+        },
+      ]);
+      setIsTyping(false);
+      return;
+    } catch (e: any) {
+      const msg = String(e?.message || "");
+      if (msg.includes("Too many")) {
+        setMessages([...newMsgs, { role: "ustad", text: msg }]);
+        setIsTyping(false);
+        return;
+      }
+      // AI off or unreachable: fall through to the built-in answers
+    }
 
-      const ustadResponse: Message = {
+    // 2. Built-in answer cards (used when the AI is off)
+    const knowledge = queryAiGuruKnowledge(text);
+    setMessages([
+      ...newMsgs,
+      {
         role: "ustad",
         text: `${knowledge.headline}\n\n${knowledge.explanation}`,
         structuredData: knowledge,
-      };
-
-      setMessages([...newMsgs, ustadResponse]);
-      setIsTyping(false);
-    }, 600);
+      },
+    ]);
+    setIsTyping(false);
   };
 
   const handleEscalateToTeacher = async () => {
     try {
       const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.text || "General Board Query";
-      const res = await escalateDoubt(
-        "Physics",
-        "Student Inquiry",
-        lastUserMsg,
-        "Student requested human mentor verification for exam preparation."
-      );
+      const lastAi = [...messages].reverse().find((m) => m.role === "ustad" && m.misconception);
+      const res = await escalateDoubt(lastSubject, "Question from AI Guru", lastUserMsg, lastAi?.misconception || "");
       setEscalated(true);
       setEscalateMessage(res.message);
     } catch (e) {
@@ -195,9 +236,15 @@ export default function SocraticUstadPage() {
                         <span>{m.structuredData.headline}</span>
                       </div>
 
-                      <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
+                      <p className="text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
                         {m.structuredData.explanation}
                       </p>
+
+                      {m.misconception && (
+                        <div className="p-2.5 bg-rose-950/30 border border-rose-500/30 rounded-xl text-[11px] text-rose-200">
+                          <b>🧠 I think this is where you got stuck:</b> {m.misconception}
+                        </div>
+                      )}
 
                       {/* Formula Box */}
                       {m.structuredData.formula && (
@@ -279,6 +326,9 @@ export default function SocraticUstadPage() {
           <Send className="w-4 h-4" />
         </button>
       </div>
+      <p className="text-[10px] text-slate-500 text-center shrink-0">
+        The AI Guru can make mistakes. Check important answers with your textbook or teacher.
+      </p>
     </div>
   );
 }

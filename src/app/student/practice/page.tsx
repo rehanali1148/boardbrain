@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/authContext";
-import { getChapters, getQuestions, submitBlitz, getMistakeVault, clearMistakeVaultItem } from "@/lib/api";
+import { getChapters, getQuestions, getAiPractice } from "@/lib/api";
+import { recordAttempts, getVault, clearVaultItem } from "@/lib/learnerModel";
 import { FALLBACK_CHAPTERS, FALLBACK_QUESTIONS } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import NastaliqText from "@/components/urdu/NastaliqText";
@@ -77,8 +78,7 @@ export default function PracticeBlitzPage() {
             setSelectedChapter(chData[0].chapter_name);
           }
         }
-        const vData = await getMistakeVault();
-        setVaultItems(vData);
+        setVaultItems(getVault());
       } catch (e) {
         console.warn("Curriculum fetch error:", e);
       } finally {
@@ -112,8 +112,19 @@ export default function PracticeBlitzPage() {
     loadQs();
   }, [selectedChapter, selectedSubject, user]);
 
+  // Time each answer: how long the student thought before choosing (feeds the learner model)
+  const lastEventAt = useRef<number>(Date.now());
+  const answerMs = useRef<Record<string, number>>({});
+  useEffect(() => {
+    lastEventAt.current = Date.now();
+    answerMs.current = {};
+  }, [questions]);
+
   const handleSelectOption = (qId: string, opt: string) => {
     if (blitzResult) return; // Locked after submission
+    const now = Date.now();
+    if (answerMs.current[qId] === undefined) answerMs.current[qId] = now - lastEventAt.current;
+    lastEventAt.current = now;
     setUserAnswers((prev) => ({ ...prev, [qId]: opt }));
   };
 
@@ -122,29 +133,48 @@ export default function PracticeBlitzPage() {
     setSubmitting(true);
     setTimerActive(false);
 
-    const answersPayload = questions.map((q) => ({
-      question_id: q.question_id,
-      selected_option: userAnswers[q.question_id] || "NONE",
-    }));
+    // Score in the browser: every question carries its key, and AI practice questions are not in the server bank.
+    const results = questions.map((q) => {
+      const chosen = userAnswers[q.question_id] || "NONE";
+      const isCorrect = chosen.toUpperCase() === String(q.correct_option || "").toUpperCase();
+      return {
+        question_id: q.question_id,
+        selected_option: chosen,
+        correct_option: q.correct_option,
+        is_correct: isCorrect,
+        examiner_feedback: isCorrect
+          ? `✓ Correct! ${q.solution_rubric || ""}`.trim()
+          : chosen === "NONE"
+          ? `Not answered. ${q.solution_rubric || ""}`.trim()
+          : `${q.trap_note ? `⚠️ ${q.trap_note} ` : ""}${q.solution_rubric || ""}`.trim(),
+      };
+    });
+    const correct = results.filter((r) => r.is_correct).length;
+    const pct = Math.round((correct / Math.max(1, results.length)) * 100);
+    const res = { total_questions: results.length, correct_answers: correct, score_percentage: pct, results };
+    setBlitzResult(res);
 
+    recordAttempts(
+      questions.map((q, i) => ({
+        qid: q.question_id,
+        subject: selectedSubject,
+        grade: user?.class_grade || 10,
+        chapter: q.chapter_name || selectedChapter,
+        text: q.text_en,
+        chosen: results[i].selected_option,
+        correct: q.correct_option,
+        isCorrect: results[i].is_correct,
+        ms: answerMs.current[q.question_id] ?? 0,
+        trap: q.trap_note,
+        source: q.is_ai ? "ai" : "bank",
+      }))
+    );
     try {
-      const res = await submitBlitz(selectedSubject, selectedChapter, answersPayload);
-      setBlitzResult(res);
-
-      // Save to client storage for dynamic dashboard sync
-      try {
-        const pct = res.score_percentage ?? res.percentage ?? 0;
-        localStorage.setItem("boardbrain_last_score_pct", String(pct));
-        localStorage.setItem("boardbrain_last_subject", selectedSubject);
-      } catch (err) {}
-
-      const vData = await getMistakeVault();
-      setVaultItems(vData);
-    } catch (e) {
-      console.warn("Submission error:", e);
-    } finally {
-      setSubmitting(false);
-    }
+      localStorage.setItem("boardbrain_last_score_pct", String(pct));
+      localStorage.setItem("boardbrain_last_subject", selectedSubject);
+    } catch (err) {}
+    setVaultItems(getVault());
+    setSubmitting(false);
   };
 
   const handleReset = () => {
@@ -152,11 +182,41 @@ export default function PracticeBlitzPage() {
     setBlitzResult(null);
     setTimeLeft(300);
     setTimerActive(true);
+    lastEventAt.current = Date.now();
+    answerMs.current = {};
   };
 
   const handleClearVaultItem = async (qid: string) => {
-    await clearMistakeVaultItem(qid);
-    setVaultItems((prev) => prev.filter((item) => item.question_id !== qid));
+    clearVaultItem(qid);
+    setVaultItems(getVault());
+  };
+
+  // AI practice: fresh questions for this chapter when the bank runs out
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const handleAiPractice = async () => {
+    setAiLoading(true);
+    setAiMessage(null);
+    try {
+      const qs = await getAiPractice(user?.class_grade || 10, selectedSubject, selectedChapter, 5);
+      if (qs.length) {
+        setQuestions(qs);
+        setUserAnswers({});
+        setBlitzResult(null);
+        setTimeLeft(300);
+        setTimerActive(true);
+      } else {
+        setAiMessage("The AI could not make questions right now. Please try again in a minute.");
+      }
+    } catch (e: any) {
+      setAiMessage(
+        String(e?.message || "").includes("AI_OFF")
+          ? "AI practice is not switched on yet. Your teacher will enable it soon."
+          : "The AI could not make questions right now. Please try again in a minute."
+      );
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Compute accurate question count per chapter from actual question store
@@ -299,7 +359,9 @@ export default function PracticeBlitzPage() {
                     <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 font-mono font-bold flex items-center justify-center text-[11px]">
                       {idx + 1}
                     </span>
-                    <span className="text-slate-400 font-medium">BSEK & AKU-EB syllabus</span>
+                    <span className="text-slate-400 font-medium">
+                      {q.is_ai ? "✨ AI practice question" : "BSEK & AKU-EB syllabus"}
+                    </span>
                     {q.cognitive_level && (
                       <span className="bg-slate-800 px-2 py-0.5 rounded text-[10px] font-semibold text-sky-400">
                         {q.cognitive_level}
@@ -413,7 +475,15 @@ export default function PracticeBlitzPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={handleAiPractice}
+              disabled={aiLoading}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600/80 hover:bg-indigo-500 disabled:opacity-60 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{aiLoading ? "Making new questions..." : "5 new AI questions on this chapter"}</span>
+            </button>
             {blitzResult ? (
               <button
                 onClick={handleReset}
@@ -445,6 +515,10 @@ export default function PracticeBlitzPage() {
         </div>
       )}
 
+      {aiMessage && (
+        <div className="p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300">{aiMessage}</div>
+      )}
+
       {/* Realistic BSEK Score Summary Modal Banner */}
       {blitzResult && (
         <div
@@ -470,7 +544,7 @@ export default function PracticeBlitzPage() {
                   : "text-rose-400"
               }`}
             >
-              Official Blitz Score
+              Blitz Score
             </span>
             <div className="text-2xl font-black text-white">
               {correctCount} / {totalCount}{" "}

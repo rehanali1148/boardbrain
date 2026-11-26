@@ -6,6 +6,14 @@ import {
   QuestionItem
 } from "@/lib/curriculumData";
 import { generateExamPaper } from "@/lib/examGenerator";
+import { aiEnabled, geminiJSON, rateLimited, GURU_SYSTEM, GURU_SCHEMA, PRACTICE_SCHEMA } from "@/lib/gemini";
+
+// AI calls can take several seconds
+export const maxDuration = 30;
+
+function clientId(req: NextRequest) {
+  return (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "local";
+}
 
 /**
  * NOTE ON STATE: the lists below live in this server instance's memory. On Vercel each instance has its own copy and
@@ -534,6 +542,93 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     const denied = requireStaff(req);
     if (denied) return denied;
     return NextResponse.json(generateExamPaper(body));
+  }
+
+  // 2b. AI Guru (Gemini). Returns 503 AI_OFF when no key is configured; the page then uses its built-in answers.
+  if (path === "student/guru") {
+    if (!aiEnabled()) return NextResponse.json({ detail: "AI_OFF" }, { status: 503 });
+    if (rateLimited(`guru:${clientId(req)}`, 20)) {
+      return NextResponse.json({ detail: "Too many questions in one minute. Take a breath and try again shortly." }, { status: 429 });
+    }
+    const message = String(body.message || "").slice(0, 1500).trim();
+    if (!message) return NextResponse.json({ detail: "Empty question" }, { status: 400 });
+    const history: { role: "user" | "model"; text: string }[] = (Array.isArray(body.history) ? body.history : [])
+      .slice(-8)
+      .map((m: any) => ({ role: m.role === "user" ? "user" : "model", text: String(m.text || "").slice(0, 1500) }))
+      .filter((m: any) => m.text);
+    // Gemini requires the conversation to start with a user turn
+    while (history.length && history[0].role !== "user") history.shift();
+    const grade = Number(body.class_grade) || 10;
+    const board = String(body.board || "BSEK").slice(0, 20);
+    const profile = String(body.learner_profile || "").slice(0, 1200);
+    const context = `Student: Class ${grade}, ${board} board.\nLearner profile: ${profile || "none yet"}`;
+    try {
+      const answer = await geminiJSON<any>({
+        system: `${GURU_SYSTEM}\n\n${context}`,
+        turns: [...history, { role: "user", text: message }],
+        schema: GURU_SCHEMA,
+        temperature: 0.35,
+      });
+      return NextResponse.json({ ...answer, source: "ai" });
+    } catch (e: any) {
+      const msg = String(e?.message || "");
+      return NextResponse.json({ detail: msg.startsWith("AI_") ? msg : "AI_ERROR" }, { status: 502 });
+    }
+  }
+
+  // 2c. AI practice MCQs for a chapter (clearly labelled as AI practice, never as past-paper questions)
+  if (path === "student/ai-practice") {
+    if (!aiEnabled()) return NextResponse.json({ detail: "AI_OFF" }, { status: 503 });
+    if (rateLimited(`practice:${clientId(req)}`, 6)) {
+      return NextResponse.json({ detail: "Please wait a minute before asking for more questions." }, { status: 429 });
+    }
+    const grade = Number(body.grade) === 9 ? 9 : 10;
+    const subject = ["Physics", "Chemistry", "Biology"].includes(body.subject) ? body.subject : "Physics";
+    const chapter = String(body.chapter || "").slice(0, 100);
+    const count = Math.min(Math.max(Number(body.count) || 5, 1), 8);
+    try {
+      const out = await geminiJSON<{ questions: any[] }>({
+        system:
+          "You write accurate multiple-choice questions for Pakistani Matric students (Sindh Textbook Board syllabus, BSEK/AKU-EB). " +
+          "Every question must have exactly one correct option, plausible distractors based on real student mistakes, and correct facts, values and SI units. " +
+          "Do not claim questions come from past papers. Output JSON only.",
+        turns: [
+          {
+            role: "user",
+            text: `Write ${count} different MCQs for Class ${grade} ${subject}, chapter "${chapter}". Mix knowledge, understanding and application (include at least one small numerical if the chapter has formulas). Give an Urdu translation of each question.`,
+          },
+        ],
+        schema: PRACTICE_SCHEMA,
+        temperature: 0.7,
+        maxTokens: 3000,
+      });
+      const stamp = Date.now();
+      const questions = (out.questions || [])
+        .filter((q) => q && q.text_en && q.A && q.B && q.C && q.D && ["A", "B", "C", "D"].includes(q.correct_option))
+        .slice(0, count)
+        .map((q, i) => ({
+          question_id: `AI-${subject.slice(0, 3).toUpperCase()}${grade}-${stamp}-${i}`,
+          board: "BSEK_KARACHI",
+          grade,
+          subject,
+          chapter_name: chapter,
+          section: "SECTION_A",
+          text_en: q.text_en,
+          text_ur: q.text_ur || "",
+          options_json: JSON.stringify({ A: q.A, B: q.B, C: q.C, D: q.D }),
+          correct_option: q.correct_option,
+          marks: 1,
+          is_numerical: false,
+          solution_rubric: q.explanation,
+          cognitive_level: q.cognitive_level || "Understanding",
+          trap_note: q.trap,
+          is_ai: true,
+        }));
+      return NextResponse.json(questions);
+    } catch (e: any) {
+      const msg = String(e?.message || "");
+      return NextResponse.json({ detail: msg.startsWith("AI_") ? msg : "AI_ERROR" }, { status: 502 });
+    }
   }
 
   // 3. Step Evaluator
