@@ -92,9 +92,10 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   // 1. Chapters
   if (path === "curriculum/chapters") {
     const grade = Number(url.searchParams.get("grade")) || 10;
-    const subject = url.searchParams.get("subject") || "Physics";
-    const key = `${subject}_${grade}`;
-    const chapters = FALLBACK_CHAPTERS[key] || FALLBACK_CHAPTERS["Physics_10"] || [];
+    const rawSub = (url.searchParams.get("subject") || "Physics").trim();
+    const subClean = rawSub.charAt(0).toUpperCase() + rawSub.slice(1).toLowerCase();
+    const key = `${subClean}_${grade}`;
+    const chapters = FALLBACK_CHAPTERS[key] || FALLBACK_CHAPTERS[`${subClean}_10`] || FALLBACK_CHAPTERS["Physics_10"] || [];
     return NextResponse.json(chapters);
   }
 
@@ -180,7 +181,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
 
   // 1. Auth Demo Token
   if (path === "auth/demo-token") {
-    const roleKey = body.roleKey || "student_10";
+    const roleKey = body.role_key || body.roleKey || "student_10";
     const profile = USER_PROFILES[roleKey] || USER_PROFILES.student_10;
     return NextResponse.json({
       access_token: `demo_jwt_token_${roleKey}_${Date.now()}`,

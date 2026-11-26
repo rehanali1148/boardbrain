@@ -76,8 +76,10 @@ export async function getChapters(board: string = "BSEK_KARACHI", grade: number 
   } catch (e) {
     // Handled by fallback below
   }
-  const key = `${subject}_${grade}`;
-  return FALLBACK_CHAPTERS[key] || FALLBACK_CHAPTERS["Physics_10"] || [];
+  const rawSub = (subject || "Physics").trim();
+  const subClean = rawSub.charAt(0).toUpperCase() + rawSub.slice(1).toLowerCase();
+  const key = `${subClean}_${grade}`;
+  return FALLBACK_CHAPTERS[key] || FALLBACK_CHAPTERS[`${subClean}_10`] || FALLBACK_CHAPTERS["Physics_10"] || [];
 }
 
 export async function getQuestions(
