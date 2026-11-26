@@ -1,16 +1,99 @@
 /**
- * Server-only AI helper with a free-first fallback chain:
- *   1. Gemini (free tier works; GEMINI_API_KEY or GOOGLE_API_KEY), main model then a lighter one if rate-limited
- *   2. Ollama on our own server (OLLAMA_URL, optional OLLAMA_TOKEN, OLLAMA_MODEL), used when Gemini is off or out of quota
- *   3. If neither is available: throws AI_OFF and the pages use their built-in content.
+ * Server-only AI helper with a free-first fallback chain. Every engine is optional and switched on by env vars:
+ *   1. Groq (free tier)       GROQ_API_KEY, GROQ_API_KEY_2 … GROQ_API_KEY_9, or GROQ_API_KEYS="k1,k2"; GROQ_MODELS="m1,m2"
+ *   2. Gemini (free tier)     GEMINI_API_KEY or GOOGLE_API_KEY; GEMINI_MODEL, GEMINI_FALLBACK_MODEL
+ *   3. OpenRouter (:free)     OPENROUTER_API_KEY(S) like Groq; OPENROUTER_MODELS
+ *   4. Ollama on our server   OLLAMA_URL, OLLAMA_TOKEN, OLLAMA_MODEL
+ * Each key × model pair is tried in turn; one that hits a rate limit or quota is rested for a while and the next one
+ * is used. If nothing is configured or everything is resting, it throws and the pages use their built-in content.
  */
 
 const GEMINI_MODELS = [process.env.GEMINI_MODEL || "gemini-2.5-flash", process.env.GEMINI_FALLBACK_MODEL || "gemini-2.5-flash-lite"];
 const geminiKey = () => process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
 const ollamaUrl = () => (process.env.OLLAMA_URL || "").replace(/\/+$/, "");
 
+/** Collect PREFIX_API_KEY, PREFIX_API_KEY_2 … _9 and PREFIX_API_KEYS (comma separated), without duplicates. */
+function keysFor(prefix: string): string[] {
+  const list: string[] = [];
+  const add = (v?: string) => (v || "").split(",").map((s) => s.trim()).filter(Boolean).forEach((k) => !list.includes(k) && list.push(k));
+  add(process.env[`${prefix}_API_KEYS`]);
+  add(process.env[`${prefix}_API_KEY`]);
+  for (let i = 2; i <= 9; i++) add(process.env[`${prefix}_API_KEY_${i}`]);
+  return list;
+}
+const listEnv = (name: string, fallback: string) => (process.env[name] || fallback).split(",").map((s) => s.trim()).filter(Boolean);
+
+interface OpenAIProvider { name: string; baseUrl: string; keys: string[]; models: string[] }
+function openAIProviders(): OpenAIProvider[] {
+  return [
+    { name: "groq", baseUrl: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1", keys: keysFor("GROQ"), models: listEnv("GROQ_MODELS", "openai/gpt-oss-120b,openai/gpt-oss-20b") },
+    { name: "openrouter", baseUrl: "https://openrouter.ai/api/v1", keys: keysFor("OPENROUTER"), models: listEnv("OPENROUTER_MODELS", "openai/gpt-oss-20b:free") },
+  ].filter((p) => p.keys.length && p.models.length);
+}
+
 export function aiEnabled() {
-  return !!geminiKey() || !!ollamaUrl();
+  return !!geminiKey() || !!ollamaUrl() || openAIProviders().length > 0;
+}
+
+/** Rest a key×model that ran out, so the next request skips it. Per server instance. */
+const restingUntil = new Map<string, number>();
+const slotId = (provider: string, key: string, model: string) => `${provider}:${key.slice(-6)}:${model}`;
+const isResting = (id: string) => (restingUntil.get(id) || 0) > Date.now();
+function rest(id: string, status: number, retryAfterSec?: number) {
+  // Rate limit: a minute (or what the server says). Bad key: an hour. Server error: 20 s.
+  const ms = status === 429 ? Math.max(60, retryAfterSec || 0) * 1000 : status === 401 || status === 403 ? 3600 * 1000 : 20 * 1000;
+  restingUntil.set(id, Date.now() + ms);
+}
+
+class HttpError extends Error {
+  constructor(public status: number, public retryAfter?: number) {
+    super(`AI_HTTP_${status}`);
+  }
+}
+
+/** Describe the JSON schema in plain words for providers that only support "json_object" mode. */
+function schemaHint(schema: any): string {
+  const props = schema?.properties || {};
+  const lines = Object.entries(props).map(([k, v]: any) => {
+    if (v.type === "ARRAY" && v.items?.properties) {
+      return `"${k}": array of objects with keys ${Object.keys(v.items.properties).map((x) => `"${x}"`).join(", ")}${v.items.properties.correct_option ? ' ("correct_option" is one of "A","B","C","D")' : ""}`;
+    }
+    return `"${k}": ${String(v.type).toLowerCase()}${v.description ? ` (${v.description})` : ""}`;
+  });
+  return `Reply with ONE JSON object only, no other text, with these keys:\n${lines.join("\n")}\nRequired keys: ${(schema?.required || []).join(", ")}.`;
+}
+
+async function callOpenAICompatible<T>(p: OpenAIProvider, key: string, model: string, o: AIOptions): Promise<T> {
+  return withTimeout(o.timeoutMs ?? 20000, async (signal) => {
+    const res = await fetch(`${p.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+        ...(p.name === "openrouter" ? { "X-Title": "BoardBrain" } : {}),
+      },
+      signal,
+      body: JSON.stringify({
+        model,
+        temperature: o.temperature ?? 0.4,
+        max_tokens: Math.min(o.maxTokens ?? 2048, 4000),
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: `${o.system}\n\n${schemaHint(o.schema)}` },
+          ...o.turns.map((t) => ({ role: t.role === "model" ? "assistant" : "user", content: t.text })),
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const ra = Number(res.headers.get("retry-after")) || undefined;
+      throw new HttpError(res.status, ra);
+    }
+    const data = await res.json();
+    const text: string = data?.choices?.[0]?.message?.content || "";
+    if (!text) throw new Error("AI_EMPTY");
+    const jsonText = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    return JSON.parse(jsonText) as T;
+  });
 }
 
 type Turn = { role: "user" | "model"; text: string };
@@ -75,8 +158,8 @@ function toJsonSchema(s: any): any {
 }
 
 async function callOllama<T>(o: AIOptions): Promise<T> {
-  // A CPU-only server is slow, so it gets a longer budget (the route allows 60 s)
-  return withTimeout(Math.max(o.timeoutMs ?? 0, 50000), async (signal) => {
+  // A CPU-only server is slow; it gets whatever time is left in the request budget
+  return withTimeout(o.timeoutMs ?? 25000, async (signal) => {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (process.env.OLLAMA_TOKEN) headers.Authorization = `Bearer ${process.env.OLLAMA_TOKEN}`;
     const res = await fetch(`${ollamaUrl()}/api/chat`, {
@@ -105,20 +188,59 @@ async function callOllama<T>(o: AIOptions): Promise<T> {
 /** Runs the free-first chain and reports which engine answered. */
 export async function aiJSON<T>(o: AIOptions): Promise<{ data: T; engine: string }> {
   let lastErr: any = new Error("AI_OFF");
+  const deadline = Date.now() + 26000; // stay inside the 30 s function limit
+  const timeLeft = () => deadline - Date.now();
+  const note = (id: string, e: any) => {
+    lastErr = e;
+    if (e instanceof HttpError) rest(id, e.status, e.retryAfter);
+    else rest(id, 0); // timeout or bad JSON: short rest
+  };
+
+  // 1. Groq, then 3. OpenRouter are handled by the same loop; Gemini sits between them
+  const providers = openAIProviders();
+  const groq = providers.filter((p) => p.name === "groq");
+  const openrouter = providers.filter((p) => p.name === "openrouter");
+
+  const tryOpenAI = async (list: OpenAIProvider[]) => {
+    for (const p of list) {
+      for (const model of p.models) {
+        for (const key of p.keys) {
+          const id = slotId(p.name, key, model);
+          if (isResting(id) || timeLeft() < 4000) continue;
+          try {
+            const data = await callOpenAICompatible<T>(p, key, model, { ...o, timeoutMs: Math.min(o.timeoutMs ?? 20000, timeLeft()) });
+            return { data, engine: `${p.name}:${model}` };
+          } catch (e) {
+            note(id, e);
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const g = await tryOpenAI(groq);
+  if (g) return g;
+
   if (geminiKey()) {
     for (const model of GEMINI_MODELS) {
+      const id = slotId("gemini", geminiKey(), model);
+      if (isResting(id) || timeLeft() < 4000) continue;
       try {
-        return { data: await callGemini<T>(model, o), engine: model };
+        return { data: await callGemini<T>(model, { ...o, timeoutMs: Math.min(o.timeoutMs ?? 22000, timeLeft()) }), engine: model };
       } catch (e: any) {
-        lastErr = e;
-        // Bad key or bad request will not get better with another Gemini model
-        if (/AI_HTTP_(400|401|403)/.test(String(e?.message))) break;
+        const m = String(e?.message).match(/AI_HTTP_(\d+)/);
+        note(id, m ? new HttpError(Number(m[1])) : e);
       }
     }
   }
-  if (ollamaUrl()) {
+
+  const r = await tryOpenAI(openrouter);
+  if (r) return r;
+
+  if (ollamaUrl() && timeLeft() > 8000) {
     try {
-      return { data: await callOllama<T>(o), engine: "ollama" };
+      return { data: await callOllama<T>({ ...o, timeoutMs: timeLeft() }), engine: "ollama" };
     } catch (e) {
       lastErr = e;
     }
