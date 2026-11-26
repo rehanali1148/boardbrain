@@ -352,8 +352,8 @@ export default function NumericalsPage() {
 
             <div className="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center space-y-2 bg-slate-900/50">
               <Camera className="w-8 h-8 text-slate-500 mx-auto" />
-              <p className="text-xs text-slate-300 font-medium">Demo Registered Image Loaded: "Concave_Mirror_Homework.jpg"</p>
-              <p className="text-[11px] text-slate-500">Camera OCR successfully extracted 4 mathematical lines.</p>
+              <p className="text-xs text-slate-300 font-medium">Example only: a sample homework photo (photo upload is coming soon)</p>
+              <p className="text-[11px] text-slate-500">This is example text, not your own work. Edit it or type your own steps below.</p>
             </div>
 
             {/* Editable Confirmation Box */}
@@ -387,10 +387,10 @@ export default function NumericalsPage() {
       {/* TAB 3: TOPPER VS AVERAGE COMPARISON VIEW */}
       {activeTab === "topper_compare" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Average 3/5 Layout */}
+          {/* Average 2.5/4 Layout */}
           <div className="bg-[#10192D] border border-rose-900/50 p-4 rounded-xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-bold text-rose-400">⚠️ Average Student Sheet (3/5 Marks)</span>
+              <span className="text-xs font-bold text-rose-400">⚠️ Average Student Sheet (2.5/4 Marks)</span>
               <span className="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded font-bold">Grade B</span>
             </div>
             <div className="text-xs text-slate-300 space-y-2 font-mono bg-slate-900/60 p-3 rounded-lg">
@@ -405,10 +405,10 @@ export default function NumericalsPage() {
             </ul>
           </div>
 
-          {/* Topper 5/5 Layout */}
+          {/* Topper 4/4 Layout */}
           <div className="bg-[#10192D] border border-emerald-900/50 p-4 rounded-xl space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-bold text-emerald-400">⭐ A-1 Topper Presentation (5/5 Marks)</span>
+              <span className="text-xs font-bold text-emerald-400">⭐ A-1 Topper Presentation (4/4 Marks)</span>
               <span className="text-xs bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded font-bold">Grade A-1</span>
             </div>
             <div className="text-xs text-slate-200 space-y-2 font-mono bg-slate-900/60 p-3 rounded-lg">
@@ -417,7 +417,7 @@ export default function NumericalsPage() {
               <p>Focal length (f) = +8 cm (Concave)</p>
               <p className="text-brand-amber font-bold mt-2">FORMULA & WORKING:</p>
               <p>1/f = 1/p + 1/q  =&gt;  q = 24 cm</p>
-              <p className="text-brand-emerald font-bold mt-2">RESULT: Real, inverted, 24 cm</p>
+              <p className="text-brand-emerald font-bold mt-2">RESULT: q = 24 cm; image is real, inverted and 8 cm tall (2× magnified)</p>
             </div>
             <ul className="text-xs text-emerald-300/80 space-y-1 list-disc pl-4">
               <li>Distinct underline headings</li>

@@ -50,24 +50,28 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
 }
 
 // 1. Auth & Role Switcher
-export async function getDemoToken(roleKey: "student_10" | "student_09" | "teacher" | "campus_head") {
+export async function getDemoToken(roleKey: "student_10" | "student_09" | "teacher" | "campus_head", staffPin?: string) {
   try {
     return await fetchWithAuth("/auth/demo-token", {
       method: "POST",
-      body: JSON.stringify({ role_key: roleKey }),
+      // A student token from an earlier session must not be sent along; this call creates the session.
+      headers: { Authorization: "" },
+      body: JSON.stringify({ role_key: roleKey, staff_pin: staffPin || "" }),
     });
   } catch (e) {
+    // Staff access is never granted offline
+    if (roleKey === "teacher" || roleKey === "campus_head") throw e;
     return {
       access_token: `mock_jwt_token_${roleKey}_${Date.now()}`,
       token_type: "bearer",
       user: {
-        erp_user_id: roleKey === "teacher" ? "TEA_1092" : "STU_2026_01",
-        full_name: roleKey === "teacher" ? "Sir Farhan Ahmed" : roleKey === "student_09" ? "Hamza Siddiqui" : "Areeba Tariq",
-        role: roleKey === "teacher" ? "teacher" : "student",
+        erp_user_id: roleKey === "student_09" ? "NASRA-SAD-STD-09" : "NASRA-SAD-STD-10",
+        full_name: roleKey === "student_09" ? "Hamza Siddiqui" : "Areeba Tariq",
+        role: "student" as const,
         campus: "Saddar",
         class_grade: roleKey === "student_09" ? 9 : 10,
-        board: "BSEK_KARACHI",
-        group_name: "Pre-Medical"
+        section: roleKey === "student_09" ? "B" : "A",
+        board: roleKey === "student_09" ? "AKU-EB" : "BSEK",
       }
     };
   }
@@ -426,9 +430,9 @@ export async function getStudentBadges(): Promise<StudentBadgesResponse> {
     student_name: "Areeba Tariq",
     erp_user_id: "NASRA-SAD-STD-10",
     total_badges: 5,
-    unlocked_count: 3,
-    total_xp: 450,
-    tier_counts: { platinum: 1, gold: 1, silver: 1, bronze: 0 },
+    unlocked_count: 0,
+    total_xp: 0,
+    tier_counts: { platinum: 0, gold: 0, silver: 0, bronze: 0 },
     badges: [
       {
         slug: "blitz-master",
@@ -440,10 +444,10 @@ export async function getStudentBadges(): Promise<StudentBadgesResponse> {
         description: "Scored 100% on 3 consecutive 5-minute Section A board blitzes.",
         criteria_text: "3 perfect blitz sessions",
         xp_points: 150,
-        earned_at: "Yesterday",
-        endorsement_by: "Sir Farhan Ahmed",
-        endorsement_note: "Flawless conceptual speed on Sindh past papers.",
-        is_unlocked: 1
+        earned_at: null,
+        endorsement_by: null,
+        endorsement_note: null,
+        is_unlocked: 0
       },
       {
         slug: "rubric-perfectionist",
@@ -455,10 +459,10 @@ export async function getStudentBadges(): Promise<StudentBadgesResponse> {
         description: "Achieved full 4/4 rubric marks on Section C numerical step builder.",
         criteria_text: "Full Given Data + Formula + Working + Units",
         xp_points: 200,
-        earned_at: "2 days ago",
-        endorsement_by: "Sir Farhan Ahmed",
-        endorsement_note: "Model presentation matching official board standards.",
-        is_unlocked: 1
+        earned_at: null,
+        endorsement_by: null,
+        endorsement_note: null,
+        is_unlocked: 0
       },
       {
         slug: "viva-champion",
@@ -470,10 +474,10 @@ export async function getStudentBadges(): Promise<StudentBadgesResponse> {
         description: "Successfully cleared external examiner bench oral with full marks.",
         criteria_text: "Score 4.0/4.0 on Lab Viva Simulator",
         xp_points: 100,
-        earned_at: "3 days ago",
+        earned_at: null,
         endorsement_by: null,
         endorsement_note: null,
-        is_unlocked: 1
+        is_unlocked: 0
       },
       {
         slug: "lab-virtuoso",

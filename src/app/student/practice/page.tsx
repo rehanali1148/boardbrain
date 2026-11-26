@@ -194,6 +194,9 @@ export default function PracticeBlitzPage() {
   // AI practice: fresh questions for this chapter when the bank runs out
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
+  useEffect(() => {
+    setAiMessage(null);
+  }, [selectedChapter, selectedSubject]);
   const handleAiPractice = async () => {
     setAiLoading(true);
     setAiMessage(null);
@@ -559,7 +562,7 @@ export default function PracticeBlitzPage() {
                 ? "👍 Solid Performance! Grade A / B Level. Review minor examiner traps."
                 : scorePct >= 33
                 ? "⚠️ Passing Benchmark Secured (Above 33% BSEK Pass Mark). Review mistakes below to reach A-1."
-                : "🚨 Below 33% Official BSEK Pass Threshold. Review fundamentals in Dual Study Cards before retrying."}
+                : "🚨 Below the 33% pass mark. Review fundamentals in Dual Study Cards before retrying."}
             </p>
           </div>
           <div

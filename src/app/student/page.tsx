@@ -268,28 +268,13 @@ export default function StudentHomePage() {
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Celebrate your board habits with zero ranking stress.
+              Earn badges by practising. Your teacher can also award you one.
             </p>
           </div>
         </div>
 
         {/* Mini Badges Preview & Link */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[11px] font-semibold">
-              <Award className="w-3 h-3 text-amber-400" />
-              <span>Teacher&apos;s Pride ⭐</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold">
-              <Target className="w-3 h-3 text-emerald-400" />
-              <span>Section A Destroyer</span>
-            </span>
-            <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold">
-              <Zap className="w-3 h-3 text-cyan-400" />
-              <span>SI Unit Master</span>
-            </span>
-          </div>
-
           <Link
             href="/student/awards"
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-brand-emerald text-xs font-bold transition-all flex items-center gap-1 shrink-0"

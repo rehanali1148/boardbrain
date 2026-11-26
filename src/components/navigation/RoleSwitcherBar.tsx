@@ -16,6 +16,15 @@ export default function RoleSwitcherBar() {
 
   // Switching role also moves you to that role's home if you are on the other role's pages.
   const switchRole = async (role: "student_10" | "student_09" | "teacher" | "campus_head") => {
+    // Moving between staff roles needs the PIN again, so send staff to the login page for that
+    if ((role === "teacher" || role === "campus_head") && !(roleKey === "teacher" || roleKey === "campus_head")) {
+      router.push("/login");
+      return;
+    }
+    if ((role === "teacher" || role === "campus_head") && role !== roleKey) {
+      router.push("/login");
+      return;
+    }
     await setRole(role);
     const staff = role === "teacher" || role === "campus_head";
     if (staff && pathname.startsWith("/student")) router.push("/teacher");
@@ -68,9 +77,12 @@ export default function RoleSwitcherBar() {
           Class 9 (Hamza)
         </button>
 
+        {/* Staff chips only appear for a signed-in staff session; staff sign in with a PIN on the login page */}
+        {isTeacherRole && (
+        <>
         <button
           onClick={() => switchRole("teacher")}
-          disabled={isLoading}
+          disabled={isLoading || roleKey === "teacher"}
           className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
             roleKey === "teacher"
               ? "bg-brand-amber text-slate-950 shadow-sm shadow-amber-500/20"
@@ -82,7 +94,7 @@ export default function RoleSwitcherBar() {
 
         <button
           onClick={() => switchRole("campus_head")}
-          disabled={isLoading}
+          disabled={isLoading || roleKey === "campus_head"}
           className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
             roleKey === "campus_head"
               ? "bg-brand-rose text-slate-950 shadow-sm shadow-rose-500/20"
@@ -91,6 +103,8 @@ export default function RoleSwitcherBar() {
         >
           Head (Mrs. Nasreen)
         </button>
+        </>
+        )}
 
         {/* Exam Light Mode Toggle */}
         <button

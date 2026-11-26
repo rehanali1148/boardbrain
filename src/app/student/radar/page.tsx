@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getBoardRadar } from "@/lib/api";
+import { radarFor } from "@/lib/radarTopics";
 import { useAuth } from "@/lib/authContext";
 import { getInsights } from "@/lib/learnerModel";
 import { Flame, Clock, CheckSquare, Sparkles, AlertCircle, Compass, Calendar, BookOpen } from "lucide-react";
@@ -46,10 +47,12 @@ export default function BoardRadarPage() {
 
   useEffect(() => {
     async function load() {
-      setLoading(true);
+      // Show the built-in list immediately; the server copy (same data, or real years later) replaces it when it arrives
+      const grade = user?.class_grade || 10;
+      setRadarItems(radarFor(grade, selectedSubject));
+      setLoading(false);
       try {
         const boardKey = user?.board === "AKU-EB" ? "AKUEB" : "BSEK_KARACHI";
-        const grade = user?.class_grade || 10;
         const data = await getBoardRadar(boardKey, grade, selectedSubject);
         setRadarItems(data);
         const options = CHAPTER_OPTIONS[selectedSubject] || [];
@@ -203,8 +206,12 @@ export default function BoardRadarPage() {
         ) : (
           radarItems.map((item) => {
             const mine = myChapters.find((c: any) => c.subject === selectedSubject && c.chapter.toLowerCase() === String(item.chapter_name).toLowerCase());
-            const status = !mine || mine.attempts < 2
+            const status = !mine
               ? { label: "Not practised yet", cls: "bg-slate-800 border-slate-700 text-slate-300" }
+              : mine.attempts < 2
+              ? mine.correct > 0
+                ? { label: "Tried once: right", cls: "bg-sky-950/60 border-sky-700 text-sky-300" }
+                : { label: "Tried once: wrong", cls: "bg-amber-950/60 border-amber-700 text-amber-300" }
               : mine.state === "mastered"
               ? { label: `Mastered (${mine.accuracy}%)`, cls: "bg-emerald-950/60 border-emerald-700 text-emerald-300" }
               : mine.state === "misconception"

@@ -27,34 +27,62 @@ export default function LoginPage() {
   const [pin, setPin] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Staff sign-in needs the staff PIN (checked by the server). Students never need a PIN.
+  const [staffPending, setStaffPending] = useState<null | "teacher" | "campus_head">(null);
+  const [staffPin, setStaffPin] = useState("");
+  const [staffError, setStaffError] = useState("");
+
+  const staffErrorText = (e: any) => {
+    const m = String(e?.message || "");
+    if (m.includes("STAFF_LOCKED")) return "Teacher login is not set up yet. Please ask the school admin.";
+    if (m.includes("STAFF_PIN_WRONG")) return "That staff PIN is not correct.";
+    return "Could not sign in. Check your connection and try again.";
+  };
+
   const handleQuickLogin = async (role: "student_10" | "student_09" | "teacher" | "campus_head") => {
-    await switchRole(role);
     if (role === "teacher" || role === "campus_head") {
+      setStaffPending(role);
+      setStaffPin("");
+      setStaffError("");
+      return;
+    }
+    await switchRole(role);
+    router.push("/student");
+  };
+
+  const handleStaffLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffPending) return;
+    if (!staffPin.trim()) {
+      setStaffError("Please enter the staff PIN.");
+      return;
+    }
+    try {
+      await switchRole(staffPending, staffPin.trim());
       router.push("/teacher");
-    } else {
-      router.push("/student");
+    } catch (err) {
+      setStaffError(staffErrorText(err));
     }
   };
 
   const handlePinLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pin) {
-      setErrorMsg("Please enter the pilot passcode (1234)");
-      return;
-    }
-    if (pin.trim() !== "1234") {
-      setErrorMsg("Invalid pilot passcode. Please use pilot PIN: 1234");
-      return;
-    }
-
-    // Validated
     setErrorMsg("");
-    await switchRole(customRole);
     if (customRole === "teacher") {
-      router.push("/teacher");
-    } else {
-      router.push("/student");
+      if (!pin.trim()) {
+        setErrorMsg("Please enter the staff PIN.");
+        return;
+      }
+      try {
+        await switchRole("teacher", pin.trim());
+        router.push("/teacher");
+      } catch (err) {
+        setErrorMsg(staffErrorText(err));
+      }
+      return;
     }
+    await switchRole(customRole);
+    router.push("/student");
   };
 
   return (
@@ -173,6 +201,29 @@ export default function LoginPage() {
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
             </button>
 
+            {staffPending && (
+              <form onSubmit={handleStaffLogin} className="p-3 rounded-xl bg-amber-950/20 border border-amber-700/50 space-y-2">
+                <label className="text-[11px] font-semibold text-amber-200 block">Staff PIN for {staffPending === "teacher" ? "Sir Farhan Ahmed" : "Campus Head"}:</label>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={staffPin}
+                    onChange={(e) => setStaffPin(e.target.value)}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                    placeholder="Enter staff PIN"
+                    autoFocus
+                  />
+                  <button type="submit" disabled={isLoading} className="px-4 py-2 rounded-lg bg-brand-amber text-slate-950 text-xs font-bold disabled:opacity-60">
+                    {isLoading ? "..." : "Sign in"}
+                  </button>
+                </div>
+                {staffError && <p className="text-[11px] text-rose-300">{staffError}</p>}
+                <p className="text-[10px] text-slate-500">Students: tap your own name below — no PIN needed.</p>
+              </form>
+            )}
+
             {/* Student: Areeba Tariq (Class 10) */}
             <button
               onClick={() => handleQuickLogin("student_10")}
@@ -284,15 +335,15 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-semibold text-slate-300">
-                  Pilot Passcode
+                  Staff PIN
                 </label>
-                <span className="text-[11px] text-brand-emerald font-medium">Pilot PIN: 1234</span>
+                <span className="text-[11px] text-slate-400 font-medium">Teachers only — students leave blank</span>
               </div>
               <div className="relative">
                 <input
                   type="password"
-                  placeholder="Enter 1234"
-                  maxLength={6}
+                  placeholder="Staff PIN (teachers only)"
+                  maxLength={12}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   className="w-full bg-[#131D33] border border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 tracking-widest focus:outline-none focus:border-brand-amber transition-colors font-mono"

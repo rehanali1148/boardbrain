@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import {
   FALLBACK_CHAPTERS,
   FALLBACK_QUESTIONS,
@@ -21,11 +22,34 @@ function clientId(req: NextRequest) {
  * it is wiped on every cold start or deploy, so nothing here is durable. Real persistence needs a database.
  */
 
-/** Role carried by the demo token ("demo_jwt_token_<roleKey>_<ts>"). Demo-grade only: real accounts are still to come. */
+/**
+ * Tokens: "demo_jwt_token_<role>_<ts>" for students, plus "_<signature>" for staff.
+ * The staff signature is an HMAC keyed by the STAFF_PIN environment variable, so a student cannot forge a teacher token.
+ * Without STAFF_PIN set, staff login is locked. (Real per-person accounts are still to come.)
+ */
+const STAFF_ROLES = ["teacher", "campus_head"];
+
+function staffSignature(role: string, ts: string) {
+  const secret = process.env.STAFF_PIN || "";
+  return createHmac("sha256", `boardbrain-staff:${secret}`).update(`${role}.${ts}`).digest("hex").slice(0, 32);
+}
+
+function issueToken(role: string) {
+  const ts = String(Date.now());
+  return STAFF_ROLES.includes(role) ? `demo_jwt_token_${role}_${ts}_${staffSignature(role, ts)}` : `demo_jwt_token_${role}_${ts}`;
+}
+
 function roleFromRequest(req: NextRequest): string | null {
   const auth = req.headers.get("authorization") || "";
-  const m = auth.match(/demo_jwt_token_(student_10|student_09|teacher|campus_head)_/);
-  return m ? m[1] : null;
+  const m = auth.match(/demo_jwt_token_(student_10|student_09|teacher|campus_head)_(\d+)(?:_([a-f0-9]{32}))?/);
+  if (!m) return null;
+  const [, role, ts, sig] = m;
+  if (!STAFF_ROLES.includes(role)) return role;
+  if (!process.env.STAFF_PIN || !sig) return null;
+  const expected = staffSignature(role, ts);
+  const ok = sig.length === expected.length && timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  const fresh = Date.now() - Number(ts) < 14 * 24 * 3600 * 1000; // staff sessions last 14 days
+  return ok && fresh ? role : null;
 }
 
 /** Teacher-only endpoints refuse students (and requests with no token). */
@@ -109,7 +133,7 @@ let liveGoldNotes: any[] = [
     class_grade: 10,
     subject: "Physics",
     topic: "Geometrical Optics - Mirror Sign Rules",
-    gold_tip_text: "Examiner Trap: If concave mirror forms virtual image behind mirror, q must be negative in 1/f = 1/p + 1/q. 45% students forget negative sign!",
+    gold_tip_text: "Examiner Trap: If concave mirror forms virtual image behind mirror, q must be negative in 1/f = 1/p + 1/q. Many students forget the negative sign.",
     created_at: new Date().toISOString(),
   },
   {
@@ -425,7 +449,9 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
         endorsement_note: a.endorsement_note,
         is_unlocked: 1,
       }));
-    const badges = [...fromTeacher, ...base.badges];
+    // The built-in badges are goals to work towards; nobody has earned them until it is really recorded.
+    const goals = base.badges.map((b: any) => ({ ...b, is_unlocked: 0, earned_at: null, endorsement_by: null, endorsement_note: null }));
+    const badges = [...fromTeacher, ...goals];
     const unlocked = badges.filter((x: any) => x.is_unlocked);
     const tier_counts = { platinum: 0, gold: 0, silver: 0, bronze: 0 } as Record<string, number>;
     unlocked.forEach((x: any) => { tier_counts[x.tier] = (tier_counts[x.tier] || 0) + 1; });
@@ -480,10 +506,22 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
 
   // 1. Auth Demo Token
   if (path === "auth/demo-token") {
-    const roleKey = body.role_key || body.roleKey || "student_10";
-    const profile = USER_PROFILES[roleKey] || USER_PROFILES.student_10;
+    const requested = body.role_key || body.roleKey || "student_10";
+    const roleKey = USER_PROFILES[requested] ? requested : "student_10";
+    if (STAFF_ROLES.includes(roleKey)) {
+      const pin = process.env.STAFF_PIN;
+      if (!pin) {
+        return NextResponse.json({ detail: "STAFF_LOCKED: teacher login is not set up yet. Ask the school admin." }, { status: 403 });
+      }
+      const given = String(body.staff_pin || "");
+      const okPin = given.length === pin.length && timingSafeEqual(Buffer.from(given), Buffer.from(pin));
+      if (!okPin) {
+        return NextResponse.json({ detail: "STAFF_PIN_WRONG: that staff PIN is not correct." }, { status: 403 });
+      }
+    }
+    const profile = USER_PROFILES[roleKey];
     return NextResponse.json({
-      access_token: `demo_jwt_token_${roleKey}_${Date.now()}`,
+      access_token: issueToken(roleKey),
       token_type: "bearer",
       user: profile,
     });

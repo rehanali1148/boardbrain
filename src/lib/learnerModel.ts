@@ -216,28 +216,51 @@ export function getInsights(studentKey = currentStudentKey()): LearnerInsights {
     return c;
   });
 
+  // A chapter is "needs work" below 70% and "strongest" at 70% or more, so one chapter can never be both.
   const rated = chapters.filter((c) => c.attempts >= 2);
-  const weakest = [...rated].sort((a, b) => a.accuracy - b.accuracy || b.attempts - a.attempts)[0];
-  const strongest = [...rated].sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts)[0];
-
-  // Misconceptions: the trap notes behind fast wrong answers, most frequent first
-  const trapCount = new Map<string, number>();
-  s.attempts
-    .filter((a) => !a.isCorrect && a.chosen !== "NONE" && a.trap && a.ms > 0 && a.ms < FAST_MS)
-    .forEach((a) => trapCount.set(a.trap!, (trapCount.get(a.trap!) || 0) + 1));
-  const misconceptions = Array.from(trapCount.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([t]) => t);
+  const weakest = [...rated].filter((c) => c.accuracy < 70).sort((a, b) => a.accuracy - b.accuracy || b.attempts - a.attempts)[0];
+  const strongest = [...rated].filter((c) => c.accuracy >= 70).sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts)[0];
 
   const answered = s.attempts.filter((a) => a.chosen !== "NONE");
   const total = answered.length;
   const accuracy = total ? Math.round((answered.filter((a) => a.isCorrect).length / total) * 100) : 0;
   const enoughData = total >= 5;
 
+  // Misconceptions: the trap notes behind fast wrong answers, most frequent first, each tied to its chapter.
+  // The weakest chapter's misconception comes first so the card's label and text always match.
+  const trapCount = new Map<string, { chapter: string; note: string; n: number }>();
+  s.attempts
+    .filter((a) => !a.isCorrect && a.chosen !== "NONE" && a.trap && a.ms > 0 && a.ms < FAST_MS)
+    .forEach((a) => {
+      const k = `${a.chapter}|${a.trap}`;
+      const cur = trapCount.get(k) || { chapter: a.chapter, note: a.trap!, n: 0 };
+      cur.n++;
+      trapCount.set(k, cur);
+    });
+  const misconceptions = enoughData
+    ? Array.from(trapCount.values())
+        .sort((a, b) => Number(b.chapter === weakest?.chapter) - Number(a.chapter === weakest?.chapter) || b.n - a.n)
+        .slice(0, 3)
+        .map((m) => `${m.chapter}: ${m.note}`)
+    : [];
+
   let headline = "Answer a few MCQ Blitz questions and BoardBrain will start reading how you think.";
   let headlineUr = "چند سوال حل کریں، پھر BoardBrain آپ کی سوچ کو سمجھنا شروع کرے گا۔";
   let nextAction = "Start a 5-minute MCQ Blitz in any chapter.";
+  if (total > 0 && !enoughData) {
+    const left = 5 - total;
+    headline = `Good start! Answer ${left} more MCQ${left === 1 ? "" : "s"} and BoardBrain will tell you what it notices about how you think.`;
+    headlineUr = `شاباش! مزید ${left} سوال حل کریں، پھر BoardBrain آپ کو بتائے گا کہ وہ آپ کی سوچ کے بارے میں کیا سمجھتا ہے۔`;
+    nextAction = "Keep going in the MCQ Blitz.";
+  } else if (enoughData && !weakest) {
+    headline = strongest
+      ? `Strong work: you are doing well in ${strongest.chapter}. Try a chapter you have not practised yet.`
+      : "Practise a few more questions in the same chapter so BoardBrain can see a pattern.";
+    headlineUr = strongest
+      ? `شاباش! ${strongest.chapter} میں آپ اچھا کر رہے ہیں۔ اب کوئی نیا باب آزمائیں۔`
+      : "ایک ہی باب میں چند مزید سوال حل کریں تاکہ BoardBrain پیٹرن دیکھ سکے۔";
+    nextAction = strongest ? "Pick a new chapter in the MCQ Blitz." : "Do two more questions in one chapter.";
+  }
   if (enoughData && weakest) {
     if (weakest.state === "misconception") {
       headline = `You answer ${weakest.chapter} questions quickly but often wrongly. That usually means one wrong idea, not a lack of effort.`;

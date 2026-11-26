@@ -281,19 +281,33 @@ export default function LabPracticalsPage() {
     const v3 = parseFloat(titrationR3);
     const diff = Math.abs(v2 - v3);
 
+    const isChem = selectedSubject === "Chemistry";
     if (diff <= 0.1) {
       setTableValidation({
         is_concordant: true,
         mean_volume: ((v2 + v3) / 2).toFixed(2),
-        message: "✓ Concordant readings verified (difference <= 0.1 ml). Observation table is 100% board ready!",
+        message: isChem
+          ? "✓ Concordant readings (difference ≤ 0.1 cm³). Your observation table is ready."
+          : "✓ Your last two readings agree (difference ≤ 0.1). Your observation table is ready.",
       });
     } else {
       setTableValidation({
         is_concordant: false,
-        message: "⚠️ Not concordant. Board examiners require consecutive readings within 0.1 ml. Repeat titration.",
+        message: isChem
+          ? "⚠️ Not concordant. Two consecutive readings must agree within 0.1 cm³. Repeat the titration."
+          : "⚠️ Your readings do not agree closely. Take the reading again carefully.",
       });
     }
   };
+
+  // Changing subject restarts the spotting card and its timer
+  useEffect(() => {
+    setSpottingIdx(0);
+    setTimerActive(false);
+    setTimerSeconds(60);
+    setShowSpottingAnswer(false);
+    setTableValidation(null);
+  }, [selectedSubject]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -657,7 +671,7 @@ export default function LabPracticalsPage() {
               <div className="font-bold">{tableValidation.message}</div>
               {tableValidation.mean_volume && (
                 <div className="text-slate-300 font-mono text-[11px] pt-1">
-                  Accepted Mean Concordant Volume (V) = {tableValidation.mean_volume} cm³
+                  {selectedSubject === "Chemistry" ? `Mean concordant volume (V) = ${tableValidation.mean_volume} cm³` : `Mean of the last two readings = ${tableValidation.mean_volume}`}
                 </div>
               )}
             </div>

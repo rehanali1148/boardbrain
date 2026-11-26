@@ -1098,10 +1098,10 @@ export function queryAiGuruKnowledge(question: string): {
   // 15. Honest, Curriculum-Grounded Fallback (No hallucinated / mismatched cards)
   return {
     headline: `Board Topic Guidance: "${question}"`,
-    explanation: `Yeh specific topic filhal hamaray verified Class 9 & 10 syllabus database mein authenticate nahi hua. BoardBrain ghalat ya unverified maloomat faraham nahi karta taake aap ke marks ka risk na ho.\n\nAap is sawal ko direct apne subject teacher (Sir Farhan Ahmed) ko forward kar saktay hain taake woh aap ko verified board answer guide karein.`,
+    explanation: `Yeh specific topic filhal BoardBrain ke built-in answers mein mojood nahi. BoardBrain ghalat ya unverified maloomat faraham nahi karta taake aap ke marks ka risk na ho.\n\nAap is sawal ko direct apne subject teacher (Sir Farhan Ahmed) ko forward kar saktay hain taake woh aap ko verified board answer guide karein.`,
     formula: "Scope: BSEK Karachi & AKU-EB Matric Curricula",
     unit: "Status: Unverified / Needs Teacher Verification",
-    stepTip: "Neechay 'Ask Sir Farhan' (Escalate Doubt) par click karein taake yeh doubt direct Saddar campus faculty inbox mein submit ho jaye.",
+    stepTip: "Neechay 'Ask My Teacher' par click karein taake yeh doubt direct Saddar campus faculty inbox mein submit ho jaye.",
     challengeQuestion: "Kya aap is sawal ko Physics, Chemistry ya Biology ke kisi specific chapter ya numerical value ke sath pooch saktay hain?"
   };
 }
