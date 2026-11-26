@@ -1,13 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-import { UserCheck, Moon, Sun, ShieldAlert, Sparkles, LogIn } from "lucide-react";
+import { UserCheck, Moon, Sun, ShieldAlert, Sparkles, LogIn, Play } from "lucide-react";
 import BoardBrainLogo from "./BoardBrainLogo";
+import OrientationVideoModal from "@/components/common/OrientationVideoModal";
 
 export default function RoleSwitcherBar() {
   const { user, roleKey, switchRole, isExamLightMode, toggleExamLightMode, isLoading } = useAuth();
+  const [showHelpModal, setShowHelpModal] = useState(false);
+
+  const isTeacherRole = roleKey === "teacher" || roleKey === "campus_head";
 
   return (
     <header className="no-print bg-[#10192D] border-b border-slate-800 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-md">
@@ -95,6 +99,21 @@ export default function RoleSwitcherBar() {
             </>
           )}
         </button>
+
+        {/* How-To Video (گائیڈ) Button */}
+        <button
+          onClick={() => setShowHelpModal(true)}
+          title="Watch How-To Video with Urdu Voiceover"
+          className={`ml-2 px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-all shadow-sm ${
+            isTeacherRole
+              ? "bg-amber-950/80 text-amber-300 hover:bg-amber-900 border-amber-500/50"
+              : "bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 border-emerald-500/50"
+          }`}
+        >
+          <Play className="w-3 h-3 fill-current" />
+          <span>How-To Video (گائیڈ)</span>
+        </button>
+
         {/* Pilot Login Portal Link */}
         <Link
           href="/login"
@@ -105,6 +124,28 @@ export default function RoleSwitcherBar() {
           <span className="hidden sm:inline">Pilot Login</span>
         </Link>
       </div>
+
+      {/* Orientation / Help Video Modal */}
+      <OrientationVideoModal
+        isOpen={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        videoSrc={
+          isTeacherRole
+            ? "/videos/boardbrain_teacher_walkthrough_with_voiceover.mp4"
+            : "/videos/boardbrain_student_walkthrough_with_voiceover.mp4"
+        }
+        title={
+          isTeacherRole
+            ? "🎓 Teacher Masterclass & Pilot Briefing — Your Board Exam AI Guru"
+            : "🚀 Welcome to BoardBrain! — Student Orientation Walkthrough"
+        }
+        subtitle={
+          isTeacherRole
+            ? "مکمل ویڈیو بریفنگ مع اردو وائس اوور • اساتذہ اور اسکول قیادت کے لیے"
+            : "اردو وائس اوور کے ساتھ مکمل گائیڈ • رٹے کے بغیر بورڈ امتحان میں A-1 گریڈ کیسے حاصل کرنا ہے"
+        }
+        theme={isTeacherRole ? "teacher" : "student"}
+      />
     </header>
   );
 }

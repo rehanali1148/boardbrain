@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { X, Play, Sparkles, Volume2 } from "lucide-react";
+import { X, Play, Sparkles, Volume2, Download, Share2 } from "lucide-react";
 
 interface OrientationVideoModalProps {
   isOpen: boolean;
@@ -108,13 +108,25 @@ export default function OrientationVideoModal({
             <span>اردو وائس اوور کے ساتھ مکمل گائیڈ • آواز آن کر کے دیکھیں</span>
           </div>
 
-          <button
-            onClick={onClose}
-            className={`px-5 py-2 rounded-xl font-bold text-xs shadow-md hover:opacity-95 transition-all flex items-center gap-1.5 ${btnBg}`}
-          >
-            <span>سمجھ گئے! پلیٹ فارم شروع کریں</span>
-            <span>→</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={videoSrc}
+              download
+              className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all shadow-sm"
+              title="Download video file to share directly on WhatsApp"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download MP4 for WhatsApp</span>
+            </a>
+
+            <button
+              onClick={onClose}
+              className={`px-5 py-2 rounded-xl font-bold text-xs shadow-md hover:opacity-95 transition-all flex items-center gap-1.5 ${btnBg}`}
+            >
+              <span>Done / بند کریں</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

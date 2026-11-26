@@ -99,7 +99,7 @@ export default function DesktopSidebar() {
 
       {/* Video Presentation Quick Link */}
       <a
-        href={isTeacher ? "/boardbrain_teacher_presentation.mp4" : "/boardbrain_student_presentation.mp4"}
+        href={isTeacher ? "/videos/boardbrain_teacher_walkthrough_with_voiceover.mp4" : "/videos/boardbrain_student_walkthrough_with_voiceover.mp4"}
         target="_blank"
         rel="noreferrer"
         className={`my-1.5 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold border transition-all ${
@@ -108,7 +108,7 @@ export default function DesktopSidebar() {
             : "bg-sky-950/60 hover:bg-sky-900/60 text-brand-sky border-sky-500/40"
         }`}
       >
-        <span>🎬 {isTeacher ? "ویڈیو بریفنگ چلائیں (Teacher Video)" : "ویڈیو واک تھرو (Student Video)"}</span>
+        <span>🎬 {isTeacher ? "ویڈیو گائیڈ چلائیں (Teacher Video)" : "ویڈیو گائیڈ چلائیں (Student Video)"}</span>
       </a>
 
       {/* Switch Account / Pilot Login */}

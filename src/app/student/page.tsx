@@ -319,7 +319,7 @@ export default function StudentHomePage() {
       <OrientationVideoModal
         isOpen={showVideoModal}
         onClose={() => setShowVideoModal(false)}
-        videoSrc="/boardbrain_student_presentation.mp4"
+        videoSrc="/videos/boardbrain_student_walkthrough_with_voiceover.mp4"
         title="🚀 Welcome to BoardBrain! — Student Orientation Walkthrough"
         subtitle="دیکھیں رٹے کے بغیر گیم بیجز کے ساتھ بورڈ امتحان میں A-1 گریڈ کیسے حاصل کرنا ہے"
         theme="student"

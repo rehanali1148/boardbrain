@@ -182,7 +182,7 @@ export default function TeacherHomePage() {
       <OrientationVideoModal
         isOpen={showVideoModal}
         onClose={() => setShowVideoModal(false)}
-        videoSrc="/boardbrain_teacher_presentation.mp4"
+        videoSrc="/videos/boardbrain_teacher_walkthrough_with_voiceover.mp4"
         title="🎓 Teacher Masterclass & Pilot Briefing — Your Board Exam AI Guru"
         subtitle="2.5 منٹ کی مکمل ویڈیو بریفنگ مع اردو وائس اوور • اساتذہ اور اسکول قیادت کے لیے"
         theme="teacher"
