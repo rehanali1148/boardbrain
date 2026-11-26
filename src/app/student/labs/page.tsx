@@ -157,23 +157,35 @@ export default function LabPracticalsPage() {
     }
   };
 
+  const currentPractical = practicals[0];
+  let vivaList: any[] = [];
+  if (currentPractical?.viva_questions_json) {
+    try {
+      vivaList = typeof currentPractical.viva_questions_json === "string"
+        ? JSON.parse(currentPractical.viva_questions_json)
+        : currentPractical.viva_questions_json;
+    } catch (e) {
+      vivaList = [];
+    }
+  } else if (currentPractical?.viva_questions) {
+    vivaList = currentPractical.viva_questions;
+  }
+  const safeVivaIdx = vivaList.length > 0 ? activeVivaQuestionIdx % vivaList.length : 0;
+  const currentQuestion = vivaList[safeVivaIdx];
+
   const handleEvaluateVivaAnswer = () => {
     if (!studentSpokenAnswer.trim()) {
       alert("Please speak or type your answer before evaluation!");
       return;
     }
 
-    const currentP = practicals[0];
-    const vivaQuestions = currentP?.viva_questions || [];
-    const currentQ = vivaQuestions[activeVivaQuestionIdx % Math.max(1, vivaQuestions.length)];
-
-    if (!currentQ) return;
+    if (!currentQuestion) return;
 
     const studentLower = studentSpokenAnswer.toLowerCase();
-    const keywords: string[] = currentQ.keywords || [];
+    const keywords: string[] = currentQuestion.keywords || (currentQuestion.a ? currentQuestion.a.toLowerCase().split(/[\s,.]+/).filter((w: string) => w.length > 4) : []);
     let matchedKeywords = 0;
 
-    keywords.forEach((kw) => {
+    keywords.forEach((kw: string) => {
       if (studentLower.includes(kw.toLowerCase())) {
         matchedKeywords++;
       }
@@ -181,9 +193,9 @@ export default function LabPracticalsPage() {
 
     const ratio = keywords.length > 0 ? matchedKeywords / keywords.length : 0.5;
     let marksAwarded = 2.0;
-    if (ratio >= 0.7) {
+    if (ratio >= 0.6) {
       marksAwarded = 4.0;
-    } else if (ratio >= 0.4) {
+    } else if (ratio >= 0.3) {
       marksAwarded = 3.0;
     } else if (studentLower.length > 15) {
       marksAwarded = 2.5;
@@ -194,8 +206,8 @@ export default function LabPracticalsPage() {
       max: 4.0,
       feedback:
         marksAwarded >= 3.5
-          ? `✓ Outstanding! Identified key examiner concepts (${matchedKeywords}/${keywords.length} core concepts stated).`
-          : `⚠️ Partial credit. You explained the basic concept, but examiners look for specific terms like: ${keywords.slice(0, 3).join(", ")}.`,
+          ? `✓ Outstanding! Demonstrated strong comprehension of board scientific principle (${matchedKeywords} key technical terms identified).`
+          : `⚠️ Good attempt! For full 4/4 marks in board viva, make sure to mention specific terms from the marking rubric.`,
     });
   };
 
@@ -218,11 +230,6 @@ export default function LabPracticalsPage() {
       });
     }
   };
-
-  const currentPractical = practicals[0];
-  const vivaList = currentPractical?.viva_questions || [];
-  const safeVivaIdx = vivaList.length > 0 ? activeVivaQuestionIdx % vivaList.length : 0;
-  const currentQuestion = vivaList[safeVivaIdx];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
