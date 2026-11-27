@@ -136,7 +136,7 @@ export default function RoleSwitcherBar() {
           }`}
         >
           <Play className="w-3 h-3 fill-current" />
-          <span>How-To Video (گائیڈ)</span>
+          <span className="hidden sm:inline">How-To Video (گائیڈ)</span>
         </button>
 
         {/* Pilot Login Portal Link */}
