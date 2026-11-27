@@ -87,6 +87,8 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Structure of Molecules", question_count: 14, subject: "Chemistry", grade: 9 },
     { chapter_name: "Physical States of Matter", question_count: 12, subject: "Chemistry", grade: 9 },
     { chapter_name: "Solutions", question_count: 15, subject: "Chemistry", grade: 9 },
+    { chapter_name: "Electrochemistry", question_count: 0, subject: "Chemistry", grade: 9 },
+    { chapter_name: "Chemical Reactivity", question_count: 0, subject: "Chemistry", grade: 9 },
   ],
   "Biology_10": [
     { chapter_name: "Gaseous Exchange", question_count: 14, subject: "Biology", grade: 10 },
