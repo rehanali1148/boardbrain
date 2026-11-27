@@ -25,11 +25,27 @@ export interface UserProfile {
   sections?: string[];
 }
 
+/** Random anonymous id per browser, used only for fair rate limits (no personal data). */
+function deviceId(): string {
+  try {
+    let id = localStorage.getItem("bb_device");
+    if (!id) {
+      id = (crypto as any)?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem("bb_device", id!);
+    }
+    return id!;
+  } catch {
+    return "";
+  }
+}
+
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== "undefined" ? localStorage.getItem("ustad_token") : null;
+  const dev = typeof window !== "undefined" ? deviceId() : "";
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(dev ? { "x-bb-device": dev } : {}),
     ...options.headers,
   };
 

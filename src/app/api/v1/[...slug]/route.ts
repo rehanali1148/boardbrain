@@ -13,8 +13,22 @@ import { aiEnabled, geminiJSON, rateLimited, GURU_SYSTEM, GURU_SCHEMA, PRACTICE_
 // AI calls can take several seconds
 export const maxDuration = 30;
 
-function clientId(req: NextRequest) {
+function clientIp(req: NextRequest) {
   return (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "local";
+}
+
+/**
+ * Per-device id (a random id each browser keeps), so a whole school lab behind one internet address
+ * is not treated as one student. Falls back to the address when the header is missing.
+ */
+function clientId(req: NextRequest) {
+  const dev = (req.headers.get("x-bb-device") || "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 64);
+  return dev ? `${clientIp(req)}:${dev}` : clientIp(req);
+}
+
+/** Per-device limit, plus a generous ceiling per internet address (a whole lab or campus). */
+function limited(kind: string, req: NextRequest, perDevice: number, perAddress: number) {
+  return rateLimited(`${kind}:${clientId(req)}`, perDevice) || rateLimited(`${kind}-ip:${clientIp(req)}`, perAddress);
 }
 
 /**
@@ -545,7 +559,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   // 2b. AI Guru (Gemini). Returns 503 AI_OFF when no key is configured; the page then uses its built-in answers.
   if (path === "student/guru") {
     if (!aiEnabled()) return NextResponse.json({ detail: "AI_OFF" }, { status: 503 });
-    if (rateLimited(`guru:${clientId(req)}`, 20)) {
+    if (limited("guru", req, 12, 400)) {
       return NextResponse.json({ detail: "Too many questions in one minute. Take a breath and try again shortly." }, { status: 429 });
     }
     const message = String(body.message || "").slice(0, 1500).trim();
@@ -577,7 +591,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   // 2c. AI practice MCQs for a chapter (clearly labelled as AI practice, never as past-paper questions)
   if (path === "student/ai-practice") {
     if (!aiEnabled()) return NextResponse.json({ detail: "AI_OFF" }, { status: 503 });
-    if (rateLimited(`practice:${clientId(req)}`, 6)) {
+    if (limited("practice", req, 4, 120)) {
       return NextResponse.json({ detail: "Please wait a minute before asking for more questions." }, { status: 429 });
     }
     const grade = Number(body.grade) === 9 ? 9 : 10;
