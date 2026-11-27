@@ -1,3 +1,4 @@
+import { PAST_QUESTIONS, pastMcqsAsPractice } from "./pastPapers";
 // Verified Board Curriculum Data Engine for BoardBrain
 // Comprehensive Sindh (BSEK) & AKU-EB Board questions for Class 9 & Class 10
 
@@ -53,6 +54,8 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Electromagnetism", question_count: 12, subject: "Physics", grade: 10 },
     { chapter_name: "Introductory Electronics", question_count: 10, subject: "Physics", grade: 10 },
     { chapter_name: "Atomic & Nuclear Physics", question_count: 12, subject: "Physics", grade: 10 },
+    { chapter_name: "Electromagnetic Spectrum", question_count: 0, subject: "Physics", grade: 10 },
+    { chapter_name: "Information & Communication Technology", question_count: 0, subject: "Physics", grade: 10 },
   ],
   "Physics_9": [
     { chapter_name: "Physical Quantities & Measurement", question_count: 15, subject: "Physics", grade: 9 },
@@ -62,6 +65,9 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Gravitation", question_count: 12, subject: "Physics", grade: 9 },
     { chapter_name: "Work & Energy", question_count: 14, subject: "Physics", grade: 9 },
     { chapter_name: "Properties of Matter", question_count: 12, subject: "Physics", grade: 9 },
+    { chapter_name: "Thermal Properties of Matter", question_count: 0, subject: "Physics", grade: 9 },
+    { chapter_name: "Vectors", question_count: 0, subject: "Physics", grade: 9 },
+    { chapter_name: "Simple Machines", question_count: 0, subject: "Physics", grade: 9 },
   ],
   "Chemistry_10": [
     { chapter_name: "Chemical Equilibrium", question_count: 14, subject: "Chemistry", grade: 10 },
@@ -1105,3 +1111,12 @@ export function queryAiGuruKnowledge(question: string): {
     challengeQuestion: "Kya aap is sawal ko Physics, Chemistry ya Biology ke kisi specific chapter ya numerical value ke sath pooch saktay hain?"
   };
 }
+
+// Real BSEK past-paper MCQs (lib/pastPapers.ts) join the practice bank, tagged with their board year.
+(() => {
+  const combos = new Set(PAST_QUESTIONS.map((q) => `${q.topicGrade}|${q.subject}`));
+  combos.forEach((c) => {
+    const [g, subj] = c.split("|");
+    FALLBACK_QUESTIONS.push(...(pastMcqsAsPractice(Number(g), subj) as any));
+  });
+})();

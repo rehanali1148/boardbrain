@@ -33,6 +33,7 @@ export default function DesktopSidebar() {
     { label: "Dual Study Cards", href: "/student/dual-cards", icon: Award },
     { label: "15-Mark Lab Arena", href: "/student/labs", icon: FlaskConical },
     { label: "High-Yield Topic Radar", href: "/student/radar", icon: Flame },
+    { label: "Karachi Board Past Papers", href: "/student/past-papers", icon: BookOpen },
     { label: "Socratic AI Guru", href: "/student/ustad", icon: MessageSquareHeart },
   ];
 

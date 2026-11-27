@@ -174,7 +174,7 @@ export default function BoardRadarPage() {
             <span>High-Yield Topic Radar</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            The core topics of your syllabus that carry the most marks, with how you are doing on each. Past-paper years will appear here once real BSEK / AKU-EB papers are added.
+            The core topics of your syllabus that carry the most marks, with how you are doing on each. Years come from real Karachi Board papers already in BoardBrain (Physics first; more subjects are being added).
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export default function BoardRadarPage() {
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
                     <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
                       <Calendar className="w-3.5 h-3.5 text-brand-amber" />
-                      <span>Appeared in board papers:</span>
+                      <span>Appeared in Karachi Board papers:</span>
                     </span>
                     {item.years_appeared.map((yr: number) => (
                       <span key={yr} className="px-2 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-[11px] font-mono font-bold text-sky-300">{yr}</span>

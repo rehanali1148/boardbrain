@@ -367,7 +367,7 @@ export default function PracticeBlitzPage() {
                       {idx + 1}
                     </span>
                     <span className="text-slate-400 font-medium">
-                      {q.is_ai ? "✨ AI practice question" : "BSEK & AKU-EB syllabus"}
+                      {q.is_ai ? "✨ AI practice question" : q.board_year ? `📜 Karachi Board ${q.board_year} paper` : "BSEK & AKU-EB syllabus"}
                     </span>
                     {q.cognitive_level && (
                       <span className="bg-slate-800 px-2 py-0.5 rounded text-[10px] font-semibold text-sky-400">

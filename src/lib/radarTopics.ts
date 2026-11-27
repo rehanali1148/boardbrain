@@ -3,6 +3,8 @@
  * Deliberately has NO past-paper years or probabilities: those must come from real BSEK / AKU-EB papers,
  * which are not in the system yet. When real papers are added, fill `years_appeared` from them.
  */
+import { yearsForChapter } from "./pastPapers";
+
 export interface RadarTopic {
   id: string;
   grade: number;
@@ -65,5 +67,9 @@ export const RADAR_TOPICS: RadarTopic[] = [
 ];
 
 export function radarFor(grade: number, subject: string): RadarTopic[] {
-  return RADAR_TOPICS.filter((t) => t.grade === grade && t.subject.toLowerCase() === subject.toLowerCase());
+  // Real years come from the typed BSEK papers in lib/pastPapers.ts (empty when a subject has none yet)
+  return RADAR_TOPICS.filter((t) => t.grade === grade && t.subject.toLowerCase() === subject.toLowerCase()).map((t) => ({
+    ...t,
+    years_appeared: yearsForChapter(t.subject, t.chapter_name),
+  }));
 }
