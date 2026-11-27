@@ -76,6 +76,9 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Hydrocarbons", question_count: 15, subject: "Chemistry", grade: 10 },
     { chapter_name: "Biochemistry", question_count: 12, subject: "Chemistry", grade: 10 },
     { chapter_name: "Environmental Chemistry", question_count: 10, subject: "Chemistry", grade: 10 },
+    { chapter_name: "Water", question_count: 0, subject: "Chemistry", grade: 10 },
+    { chapter_name: "Chemical Industries", question_count: 0, subject: "Chemistry", grade: 10 },
+    { chapter_name: "Analytical Chemistry", question_count: 0, subject: "Chemistry", grade: 10 },
   ],
   "Chemistry_9": [
     { chapter_name: "Fundamentals of Chemistry", question_count: 16, subject: "Chemistry", grade: 9 },
@@ -92,6 +95,9 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Support and Movement", question_count: 14, subject: "Biology", grade: 10 },
     { chapter_name: "Reproduction", question_count: 16, subject: "Biology", grade: 10 },
     { chapter_name: "Inheritance", question_count: 14, subject: "Biology", grade: 10 },
+    { chapter_name: "Man and His Environment", question_count: 0, subject: "Biology", grade: 10 },
+    { chapter_name: "Biotechnology", question_count: 0, subject: "Biology", grade: 10 },
+    { chapter_name: "Pharmacology", question_count: 0, subject: "Biology", grade: 10 },
   ],
   "Biology_9": [
     { chapter_name: "Introduction to Biology", question_count: 14, subject: "Biology", grade: 9 },
