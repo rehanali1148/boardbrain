@@ -108,6 +108,9 @@ export const FALLBACK_CHAPTERS: Record<string, ChapterItem[]> = {
     { chapter_name: "Cells and Tissues", question_count: 18, subject: "Biology", grade: 9 },
     { chapter_name: "Cell Cycle", question_count: 14, subject: "Biology", grade: 9 },
     { chapter_name: "Enzymes", question_count: 12, subject: "Biology", grade: 9 },
+    { chapter_name: "Bioenergetics", question_count: 0, subject: "Biology", grade: 9 },
+    { chapter_name: "Nutrition", question_count: 0, subject: "Biology", grade: 9 },
+    { chapter_name: "Transport", question_count: 0, subject: "Biology", grade: 9 },
   ]
 };
 
