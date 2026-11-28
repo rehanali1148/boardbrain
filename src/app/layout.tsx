@@ -5,6 +5,7 @@ import RoleSwitcherBar from "@/components/navigation/RoleSwitcherBar";
 import DesktopSidebar from "@/components/navigation/DesktopSidebar";
 import MobileDock from "@/components/navigation/MobileDock";
 import RoleGuard from "@/components/navigation/RoleGuard";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "BoardBrain | Your Board Exam AI Guru - BSEK & AKU-EB",
@@ -43,6 +44,8 @@ export default function RootLayout({
             <MobileDock />
           </div>
         </AuthProvider>
+        <Analytics />
+
       </body>
     </html>
   );

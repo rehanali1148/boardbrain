@@ -1118,7 +1118,7 @@ export function queryAiGuruKnowledge(question: string): {
     explanation: `Yeh specific topic filhal BoardBrain ke built-in answers mein mojood nahi. BoardBrain ghalat ya unverified maloomat faraham nahi karta taake aap ke marks ka risk na ho.\n\nAap is sawal ko direct apne subject teacher (Sir Farhan Ahmed) ko forward kar saktay hain taake woh aap ko verified board answer guide karein.`,
     formula: "Scope: BSEK Karachi & AKU-EB Matric Curricula",
     unit: "Status: Unverified / Needs Teacher Verification",
-    stepTip: "Neechay 'Ask My Teacher' par click karein taake yeh doubt direct Saddar campus faculty inbox mein submit ho jaye.",
+    stepTip: "Yeh sawal apne teacher se class mein poochein, ya oopar 'Give feedback' se humein batayein taake hum yeh jawab shamil kar sakein.",
     challengeQuestion: "Kya aap is sawal ko Physics, Chemistry ya Biology ke kisi specific chapter ya numerical value ke sath pooch saktay hain?"
   };
 }

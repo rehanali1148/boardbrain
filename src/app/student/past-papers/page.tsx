@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "@/lib/authContext";
 import { PAST_QUESTIONS, pastPaperIndex } from "@/lib/pastPapers";
 import { ScrollText, Eye, EyeOff } from "lucide-react";
+import { track } from "@vercel/analytics";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -65,7 +66,7 @@ export default function PastPapersPage() {
           <div className="flex flex-wrap gap-1.5 items-center">
             <span className="text-slate-400 font-semibold mr-1">Year:</span>
             {years.map((y) => (
-              <button key={y} onClick={() => { setYear(y); setPicked({}); }}
+              <button key={y} onClick={() => { setYear(y); setPicked({}); try { track("past_paper_open", { cls: grade, subject: current?.subject || "", year: y }); } catch {} }}
                 className={`px-2.5 py-1 rounded-lg font-mono font-bold ${activeYear === y ? "bg-brand-amber text-slate-950" : "bg-slate-900 text-sky-300 border border-slate-700"}`}>
                 {y}
               </button>

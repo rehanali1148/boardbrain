@@ -191,7 +191,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-6">
-            <span>Contact: <a href="mailto:admin.nasra@nasraschool.edu.pk" className="text-slate-300 hover:text-white underline">admin.nasra@nasraschool.edu.pk</a></span>
+            <span>Contact: <a href="mailto:admin.nasra@nasraschool.edu.pk" className="text-slate-300 hover:text-white underline">admin.nasra@nasraschool.edu.pk</a> • <a href="/about" className="text-slate-300 hover:text-white underline">About & Privacy</a></span>
             <Link href="/login" className="hover:text-slate-200">Pilot Portal</Link>
           </div>
         </div>

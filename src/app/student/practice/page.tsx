@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/authContext";
 import { getChapters, getQuestions, getAiPractice, getAiStatus } from "@/lib/api";
 import { recordAttempts, getVault, clearVaultItem } from "@/lib/learnerModel";
+import { track } from "@vercel/analytics";
 import { FALLBACK_CHAPTERS, FALLBACK_QUESTIONS } from "@/lib/curriculumData";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import NastaliqText from "@/components/urdu/NastaliqText";
@@ -153,6 +154,11 @@ export default function PracticeBlitzPage() {
     const pct = Math.round((correct / Math.max(1, results.length)) * 100);
     const res = { total_questions: results.length, correct_answers: correct, score_percentage: pct, results };
     setBlitzResult(res);
+    try {
+      track("blitz_finished", { subject: selectedSubject, score_pct: pct });
+    } catch {
+      /* analytics off */
+    }
 
     recordAttempts(
       questions.map((q, i) => ({

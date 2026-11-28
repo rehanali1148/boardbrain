@@ -7,6 +7,8 @@ import { learnerSummaryForAI, recordGuruQuestion } from "@/lib/learnerModel";
 import { solveNumerical } from "@/lib/guruSolver";
 import { matchBank } from "@/lib/guruBank";
 import { queryAiGuruKnowledge } from "@/lib/curriculumData";
+import { OPEN_PILOT, feedbackHref } from "@/lib/pilot";
+import { track } from "@vercel/analytics";
 import KaTeXRenderer from "@/components/math/KaTeXRenderer";
 import {
   MessageSquareHeart,
@@ -78,6 +80,15 @@ export default function SocraticUstadPage() {
   }, [messages, isTyping]);
 
   const [lastSubject, setLastSubject] = useState("Physics");
+  const [rated, setRated] = useState<Record<number, "up" | "down">>({});
+  const rate = (idx: number, v: "up" | "down", headline: string) => {
+    setRated((r) => ({ ...r, [idx]: v }));
+    try {
+      track("guru_rating", { rating: v, topic: headline.slice(0, 80) });
+    } catch {
+      /* analytics off */
+    }
+  };
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
@@ -91,6 +102,11 @@ export default function SocraticUstadPage() {
 
     // 0. Instant answers, no AI: numerical solver first, then the prepared answer bank
     const local = solveNumerical(text) || matchBank(text, user?.class_grade);
+    try {
+      track("guru_question", { answered_by: local ? local.source : "ai_or_fallback" });
+    } catch {
+      /* analytics off */
+    }
     if (local) {
       setMessages([
         ...newMsgs,
@@ -191,7 +207,19 @@ export default function SocraticUstadPage() {
           </p>
         </div>
 
-        {/* Escalate Button */}
+        {/* Open pilot: no teacher behind the site yet, so ask for feedback instead */}
+        {OPEN_PILOT ? (
+          <a
+            href={feedbackHref("BoardBrain AI Guru feedback")}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track("feedback_open", { from: "guru" })}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-amber text-slate-950 hover:bg-amber-400 shadow-sm flex items-center gap-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Give feedback</span>
+          </a>
+        ) : (
         <button
           onClick={handleEscalateToTeacher}
           disabled={escalated}
@@ -213,6 +241,7 @@ export default function SocraticUstadPage() {
             </>
           )}
         </button>
+        )}
       </div>
 
       {/* Escalation Success Alert */}
@@ -310,6 +339,39 @@ export default function SocraticUstadPage() {
                         <p className="text-xs font-semibold text-slate-100">
                           {m.structuredData.challengeQuestion}
                         </p>
+                      </div>
+
+                      {/* Was this helpful? (counted anonymously for the pilot report) */}
+                      <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-400">
+                        {rated[idx] ? (
+                          <span className="text-emerald-400">Thanks for the feedback!</span>
+                        ) : (
+                          <>
+                            <span>Helpful?</span>
+                            <button
+                              onClick={() => rate(idx, "up", m.structuredData!.headline)}
+                              className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-emerald-900"
+                              aria-label="Helpful"
+                            >
+                              👍
+                            </button>
+                            <button
+                              onClick={() => rate(idx, "down", m.structuredData!.headline)}
+                              className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-900"
+                              aria-label="Not helpful"
+                            >
+                              👎
+                            </button>
+                            <a
+                              href={feedbackHref("BoardBrain: wrong or unclear answer", `Question/answer: ${m.structuredData!.headline}\n\nWhat was wrong:`)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-slate-200"
+                            >
+                              Report a mistake
+                            </a>
+                          </>
+                        )}
                       </div>
                     </>
                   ) : (

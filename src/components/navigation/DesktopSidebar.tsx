@@ -119,6 +119,12 @@ export default function DesktopSidebar() {
       >
         <span>🔄 Switch Pilot Account / Login</span>
       </Link>
+      <Link
+        href="/about"
+        className="mb-2 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-slate-400 hover:text-white text-[11px] underline"
+      >
+        <span>About & Privacy</span>
+      </Link>
 
       {/* Bottom Board Badge */}
       <div className="mt-auto pt-4 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-between">
